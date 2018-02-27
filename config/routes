@@ -4,5 +4,5 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
-!/#PathUserName UserR GET
-!/#PathUserName/#PathTags UserTagsR GET
+!/#UserNameP UserR GET
+!/#UserNameP/#TagsP UserTagsR GET

@@ -1,32 +1,39 @@
 <div #main_column>
-
   <div #bookmarks>
-
-    $forall (Entity bk Bookmark{..}, btags) <- bmarks
-      <div>
-
-         <div name="edit_checkbox" class="edit_checkbox">
-           <input autocomplete="off" id="checkbox_#{fromSqlKey bk}" type="checkbox">
-
-         <div id="#{fromSqlKey bk}" .bookmark :not bookmarkShared:.private>
-
-           <div .star><span onclick="toggle_star(#{fromSqlKey bk})">✭</span>
-
-           <div .display>    
-             <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{bookmarkDescription}
-             <br>
-
-             <a .url_display href="#{bookmarkHref}"> #{bookmarkHref}
-             <br>
-
-             <div .description> #{bookmarkExtended}
-             $forall (Entity bt BookmarkTag{..}) <- btags
-               <a .tag href="/u:#{uname}/t:#{bookmarkTagTag}/">#{bookmarkTagTag}</a>&nbsp; 
-             <br>
-
-             <a .when href="#" title="">
-               #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
-
+    $forall (Entity bk' Bookmark{..}, btags) <- bmarks
+      $with bk <- fromSqlKey bk'
+        <div>
+           <div .edit_checkbox name="edit_checkbox">
+             <input #checkbox_#{bk} autocomplete="off" type="checkbox">
+  
+           <div ##{bk} .bookmark :not bookmarkShared:.private data-bk='#{bk}'>
+  
+             <div .star :bookmarkSelected:.selected_star><span onclick="toggle_star(#{bk})">✭</span>
+  
+             <div .display>    
+               <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{bookmarkDescription}
+               <br>
+  
+               <a .url_display href="#{bookmarkHref}"> #{bookmarkHref}
+               <br>
+  
+               <div .description> #{bookmarkExtended}
+               $forall (Entity bt BookmarkTag{..}) <- btags
+                 <a .tag href="@{UserTagsR (UserNameP uname) (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
+               <br>
+  
+               <a .when href="#" title="">
+                 #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
+                 
+               <div ##{bk}.edit_links .edit_links style="display:inline">
+                  &nbsp;&nbsp;
+                  <a .edit onclick="edit();return false;" href="#"> edit&nbsp;&nbsp;
+                  <div .delete_link>
+                    <a .delete onclick="delete_bmark();return false" href="#" style="display: inline; visibility: visible;"> delete
+                    <span .confirm style="display: none; visibility: hidden;">
+                      <a href="#" onclick="cancel();return false"> cancel /
+                      <a .destroy href="#" onclick="destroy_bmark();return false"> destroy
+  
+             <div style="clear:both">
+  
            <div style="clear:both">
-
-         <div style="clear:both">

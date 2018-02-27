@@ -43,6 +43,7 @@ Bookmark
   time UTCTime
   shared Bool
   toRead Bool
+  selected Bool
   UniqueUserHref userId href
   deriving Show Eq Typeable Ord
 
@@ -124,7 +125,7 @@ bookmarkEntityToTags (Entity {entityKey = bookmarkId
 
 postToBookmark :: UserId -> P.Post -> Bookmark
 postToBookmark user P.Post {..} =
-  Bookmark user postHref postDescription postExtended postTime postShared postToRead
+  Bookmark user postHref postDescription postExtended postTime postShared postToRead False
 
 -- Bookmark Files
 

@@ -33,27 +33,28 @@ data App = App
 
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
-newtype PathUserName =
-  PathUserName Text
+newtype UserNameP =
+  UserNameP Text
   deriving (Eq, Show, Read)
 
-instance PathPiece PathUserName where
-  toPathPiece (PathUserName i) = "u:" <> i
+instance PathPiece UserNameP where
+  toPathPiece (UserNameP i) = "u:" <> i
   fromPathPiece s =
     case splitOn ":" s of
-      ["u", uname] -> Just $ PathUserName uname
+      ["u", ""] -> Nothing
+      ["u", uname] -> Just $ UserNameP uname
       _ -> Nothing
 
-newtype PathTags =
-  PathTags [Text]
+newtype TagsP =
+  TagsP [Text]
   deriving (Eq, Show, Read)
 
-instance PathPiece PathTags where
-  toPathPiece (PathTags tags) = "t:" <> (intercalate "+" tags)
+instance PathPiece TagsP where
+  toPathPiece (TagsP tags) = "t:" <> (intercalate "+" tags)
   fromPathPiece s =
     case splitOn ":" s of
       ["t", ""] -> Nothing
-      ["t", tags] -> Just $ PathTags (splitOn "+" tags)
+      ["t", tags] -> Just $ TagsP (splitOn "+" tags)
       _ -> Nothing
 
 instance Yesod App where
