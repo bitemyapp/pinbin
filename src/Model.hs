@@ -85,23 +85,25 @@ getUserByName uname =
 
 bookmarksByDate :: Key User -> Maybe Int -> Maybe Int -> DB (Int, [Entity Bookmark])
 bookmarksByDate userId count' page =
-  do
-    let count'' = maybe 100 fromIntegral count'
-        page' = maybe 1 fromIntegral page
-        _inner b =
-            where_ (b ^. BookmarkUserId E.==. val userId)
-    r' <- select $
-          from $ \b -> do
-          _inner b
-          pure E.countRows
-    r <- select $
+    (,) -- total count
+    <$> fmap _sumValues
+        (select $
+        from $ \b -> do
+        _inner b
+        pure $ E.val 1)
+        -- paged data
+    <*> (select $
          from $ \b -> do
          _inner b
          orderBy [desc (b ^. BookmarkTime)]
          limit count''
          offset ((page' - 1) * count'')
-         pure b
-    pure (_sumValues r', r)
+         pure b)
+  where
+    _inner b =
+      where_ (b ^. BookmarkUserId E.==. val userId)
+    count'' = maybe 100 fromIntegral count'
+    page' = maybe 1 fromIntegral page
 
 
 bookmarksByTags :: Key User
@@ -109,32 +111,38 @@ bookmarksByTags :: Key User
                 -> Maybe Int
                 -> Maybe Int
                 -> DB (Int, [Entity Bookmark])
-bookmarksByTags userId tags count' page = do
-  do
-    let count'' = maybe 100 fromIntegral count'
-        page' = maybe 1 fromIntegral page
-        _inner b t = do
-          where_  ( b ^. BookmarkUserId E.==. val userId
-                  &&. b ^. BookmarkId E.==. t ^. BookmarkTagBookmarkId
-                  &&. t ^. BookmarkTagTag `in_` valList tags )
-          E.groupBy (b ^. BookmarkId)
-          having (E.count (b ^. BookmarkId) E.==. val (length tags))
-    r' <- select $
-          from $ \(b, t) -> do
-          _inner b t
-          pure E.countRows
-    r <- select $ 
+bookmarksByTags userId tags count' page =
+    (,) -- total count
+    <$> fmap _sumValues
+        (select $
+        from $ \(b, t) -> do
+        _inner b t
+        pure $ E.val 1)
+        -- paged data
+    <*> (select $
          from $ \(b, t) -> do
          _inner b t
          orderBy [desc (b ^. BookmarkTime)]
          limit count''
          offset ((page' - 1) * count'')
-         pure b
-    pure (_sumValues r', r)
+         pure b)
+  where
+    _inner b t = do
+      where_  ( b ^. BookmarkUserId E.==. val userId
+            &&. b ^. BookmarkId E.==. t ^. BookmarkTagBookmarkId
+            &&. t ^. BookmarkTagTag `in_` valList tags )
+      E.groupBy (b ^. BookmarkId)
+      having (E.count (b ^. BookmarkId) E.==. val (length tags))
+    count'' = maybe 100 fromIntegral count'
+    page' = maybe 1 fromIntegral page
 
-withTags :: [Entity Bookmark] -> DB [(Entity Bookmark, [Entity BookmarkTag])]
-withTags = mapM (\b -> 
-  (b, ) <$> selectList [BookmarkTagBookmarkId ==. entityKey b] [Asc BookmarkTagSeq])
+withTags :: [Entity Bookmark] -> DB [Entity BookmarkTag]
+withTags bmarks =
+  select $
+  from $ \t -> do
+  where_ (t ^. BookmarkTagBookmarkId `in_` valList (fmap entityKey bmarks))
+  orderBy [asc (t ^. BookmarkTagSeq)]
+  pure t
 
 bookmarkEntityToTags :: Entity Bookmark -> [P.Tag] -> [BookmarkTag]
 bookmarkEntityToTags (Entity {entityKey = bookmarkId

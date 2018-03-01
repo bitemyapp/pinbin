@@ -3,7 +3,7 @@
     <div .small_username>
       <b>
         <a href="@{UserR (UserNameP uname)}">#{uname}
-        $forall tag <- tags
+        $forall tag <- pathtags
           \  + #
           <a href="@{UserTagsR (UserNameP uname) (TagsP [tag])}">#{tag}
     <div .bookmark_count_box>
@@ -24,7 +24,7 @@
       <a href="/u:#{uname}/tweets/" .filter >tweets
     <div style="clear:both">
   <div #bookmarks>
-    $forall (Entity bk' Bookmark{..}, btags) <- bmarks
+    $forall (Entity bk' Bookmark{..}) <- bmarks
       $with bk <- fromSqlKey bk'
         <div>
            <div .edit_checkbox name="edit_checkbox">
@@ -42,8 +42,9 @@
                <br>
   
                <div .description> #{bookmarkExtended}
-               $forall (Entity bt BookmarkTag{..}) <- btags
-                 <a .tag href="@{UserTagsR (UserNameP uname) (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
+               $with btags <- filter ((==) bk' . (bookmarkTagBookmarkId . E.entityVal)) alltags
+                 $forall (Entity bt BookmarkTag{..}) <- btags
+                   <a .tag href="@{UserTagsR (UserNameP uname) (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
                <br>
   
                <a .when href="#" title="">
