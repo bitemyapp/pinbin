@@ -28,7 +28,6 @@ import Database.Persist.Sql
 import Database.Esqueleto hiding ((==.))
 import qualified Database.Esqueleto as E
 
-
 share [mkPersist sqlSettings, mkMigrate "migrateSchema"] [persistLowerCase| 
 User
   name Text
@@ -66,7 +65,7 @@ migrateIndexes :: Migration
 migrateIndexes =
   toMigration
     [ "CREATE INDEX IF NOT EXISTS idx_bookmark_time ON bookmark (user_id, time DESC)"
-    , "CREATE INDEX IF NOT EXISTS idx_bookmark_tag_bookmark_id ON bookmark_tag (bookmark_id)"
+    , "CREATE INDEX IF NOT EXISTS idx_bookmark_tag_bookmark_id ON bookmark_tag (bookmark_id, id, tag, seq)"
     ]
 
 
@@ -90,7 +89,7 @@ bookmarksByDate userId count' page =
         (select $
         from $ \b -> do
         _inner b
-        pure $ E.val 1)
+        pure $ E.countRows)
         -- paged data
     <*> (select $
          from $ \b -> do
@@ -115,26 +114,29 @@ bookmarksByTags userId tags count' page =
     (,) -- total count
     <$> fmap _sumValues
         (select $
-        from $ \(b, t) -> do
-        _inner b t
-        pure $ E.val 1)
+        from $ \b -> do
+        _inner b
+        pure $ E.countRows)
         -- paged data
     <*> (select $
-         from $ \(b, t) -> do
-         _inner b t
+         from $ \b -> do
+         _inner b
          orderBy [desc (b ^. BookmarkTime)]
          limit count''
          offset ((page' - 1) * count'')
          pure b)
   where
-    _inner b t = do
-      where_  ( b ^. BookmarkUserId E.==. val userId
-            &&. b ^. BookmarkId E.==. t ^. BookmarkTagBookmarkId
-            &&. t ^. BookmarkTagTag `in_` valList tags )
-      E.groupBy (b ^. BookmarkId)
-      having (E.count (b ^. BookmarkId) E.==. val (length tags))
+    _inner b = do
+      where_ $
+        foldMap (\tag -> Endo $ (&&.) 
+          (exists $   -- each tag becomes an exists constraint
+           from $ \t ->
+           where_ (t ^. BookmarkTagBookmarkId E.==. b ^. BookmarkId &&.
+                  (t ^. BookmarkTagTag E.==. val tag)))) tags
+        `appEndo` (b ^. BookmarkUserId E.==. val userId)
     count'' = maybe 100 fromIntegral count'
     page' = maybe 1 fromIntegral page
+    
 
 withTags :: [Entity Bookmark] -> DB [Entity BookmarkTag]
 withTags bmarks =

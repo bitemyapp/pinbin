@@ -8,6 +8,7 @@
 module Handler.User where
 
 import Import
+import Pretty
 import Text.Read
 import Database.Persist.Sql
 import qualified Database.Esqueleto as E
@@ -21,7 +22,9 @@ getUserR (UserNameP uname) = do
   (bcount, bmarks, alltags) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)
+       cpprint =<< liftIO getCurrentTime
        (c, b) <- bookmarksByDate userId count' page 
+       cpprint =<< liftIO getCurrentTime
        t <- withTags b
        pure (c, b, t)
   let pathtags = []
