@@ -34,7 +34,7 @@ data App = App
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
 newtype UserNameP =
-  UserNameP Text
+  UserNameP { unUserNameP :: Text }
   deriving (Eq, Show, Read)
 
 instance PathPiece UserNameP where
@@ -46,7 +46,7 @@ instance PathPiece UserNameP where
       _ -> Nothing
 
 newtype TagsP =
-  TagsP [Text]
+  TagsP { unTagsP :: [Text] }
   deriving (Eq, Show, Read)
 
 instance PathPiece TagsP where

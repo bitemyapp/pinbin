@@ -17,19 +17,24 @@ import Database.Persist.Sql
 getUserR :: UserNameP -> Handler Html
 getUserR (UserNameP uname) = do
   (count', page) <- _lookupPagingParams
-  bmarks <-
+  (bcount, bmarks) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)
-       withTags =<< bookmarksByDate userId count' page
+       (c, b) <- bookmarksByDate userId count' page 
+       b' <- withTags b
+       pure (c, b')
+  let tags = []
   defaultLayout $ do $(widgetFile "user")
 
 getUserTagsR :: UserNameP -> TagsP -> Handler Html
 getUserTagsR (UserNameP uname) (TagsP tags) = do
   (count', page) <- _lookupPagingParams
-  bmarks <-
+  (bcount, bmarks) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)
-       withTags =<< bookmarksByTags userId tags count' page
+       (c, b) <- bookmarksByTags userId tags count' page 
+       b' <- withTags b
+       pure (c, b')
   defaultLayout $ do $(widgetFile "user")
 
 _lookupPagingParams :: Handler (Maybe Int, Maybe Int)
