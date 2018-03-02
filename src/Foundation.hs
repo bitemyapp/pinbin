@@ -6,6 +6,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE LambdaCase #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Foundation where
 
@@ -32,6 +34,16 @@ data App = App
     }
 
 mkYesodData "App" $(parseRoutesFile "config/routes")
+
+instance PathPiece SharedP where
+  toPathPiece = \case
+    SharedAll -> ""
+    SharedPublic -> "public"
+    SharedPrivate -> "private"
+  fromPathPiece = \case
+    "public" -> Just SharedPublic
+    "private" -> Just SharedPrivate
+    _ -> Nothing
 
 newtype UserNameP =
   UserNameP { unUserNameP :: Text }

@@ -9,7 +9,7 @@
     <div .bookmark_count_box>
       <span .bookmark_count>#{bcount}</span>
     <div>
-      <a href="/u:#{uname}/" class="filter ">all
+      <a href="@{UserR (UserNameP uname)}" class="filter ">all
       ‧  
       <a href="/u:#{uname}/private/" class="filter ">private
       ‧  

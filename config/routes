@@ -5,4 +5,5 @@
 
 / HomeR GET
 !/#UserNameP UserR GET
+!/#UserNameP/#SharedP UserSharedR GET
 !/#UserNameP/#TagsP UserTagsR GET
