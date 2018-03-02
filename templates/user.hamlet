@@ -21,20 +21,10 @@
       ‧  
       <a href="@{UserFilterR (UserNameP uname) FilterStarred}" .filter >starred
     <div style="clear:both">
+  
+  ^{pager}
       
-  $maybe route <- mroute
-    <div #nextprev style="border:0px solid orange">
-      <table style="float:left" border="0">
-        <tbody>
-          <tr>
-            <td width="80">
-              <!-- <a .next_prev #top_earlier href="@?{(route, [("page", pack $ show $ page + 1)])}"> -->
-              <!--  « earlier -->
-              <!-- <a .next_prev #top_later href="@?{(route, [("page", pack $ show $ page - 1)])}"> -->
-              <!--  later » -->
-      <div style="clear:both">
-
-    <div #bulk_links>
+  <div #bulk_links>
 
   <div #bookmarks>
     $forall (Entity bk' Bookmark{..}) <- bmarks
@@ -75,3 +65,5 @@
              <div style="clear:both">
   
            <div style="clear:both">
+
+  ^{pager}

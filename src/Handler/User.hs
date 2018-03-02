@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module Handler.User where
 
@@ -33,7 +34,9 @@ getUserTagsR uname pathtags =
 
 _getUser :: UserNameP -> SharedP -> FilterP -> TagsP -> Handler Html
 _getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
-  (limit, page) <- _lookupPagingParams
+  (limit', page') <- _lookupPagingParams
+  let limit = maybe 100 fromIntegral limit'
+      page  = maybe 1   fromIntegral page'
   (bcount, bmarks, alltags) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)
@@ -41,11 +44,15 @@ _getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
        tg <- tagsQuery bm
        pure (cnt, bm, tg)
   mroute <- getCurrentRoute 
-  defaultLayout $ do $(widgetFile "user")
-  where
-    _lookupPagingParams =
-      (,)
-      <$> fmap parseMaybe (lookupGetParam "count")
-      <*> fmap parseMaybe (lookupGetParam "page")
-      where
-        parseMaybe x = readMaybe . unpack =<< x
+  let pager = $(widgetFile "pager")
+  defaultLayout $ do
+    $(widgetFile "user")
+
+_lookupPagingParams :: Handler (Maybe Int64, Maybe Int64)
+_lookupPagingParams =
+    (,)
+    <$> fmap parseMaybe (lookupGetParam "count")
+    <*> fmap parseMaybe (lookupGetParam "page")
+    where
+    parseMaybe x = readMaybe . unpack =<< x
+

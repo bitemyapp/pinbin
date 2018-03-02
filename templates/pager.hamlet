@@ -1,0 +1,14 @@
+$maybe route <- mroute
+  <div #nextprev style="border:0px solid orange">
+    <table style="float:left" border="0">
+      <tbody>
+        <tr>
+          $if (fromIntegral (length bmarks)) >= limit
+            <td width="80">
+              <a .next_prev #top_earlier href="@?{(route, [("page", pack $ show $ page + 1)])}">
+                « earlier
+          $if (page) > 1
+            <td width="80">
+              <a .next_prev #top_later href="@?{(route, [("page", pack $ show $ page - 1)])}">
+                later »
+    <div style="clear:both">

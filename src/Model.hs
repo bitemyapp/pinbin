@@ -82,8 +82,8 @@ newtype UnreadOnly =
   UnreadOnly { unUnreadOnly :: Bool }
   deriving (Eq, Show, Read)
 
-type Limit = Int
-type Page = Int
+type Limit = Int64
+type Page = Int64
 
 -- Migration
 
@@ -113,26 +113,24 @@ bookmarksQuery
   -> SharedP
   -> FilterP
   -> [P.Tag]
-  -> Maybe Limit
-  -> Maybe Page
+  -> Limit
+  -> Page
   -> DB (Int, [Entity Bookmark])
 bookmarksQuery userId sharedp filterp tags limit' page =
-  let limit'' = maybe 100 fromIntegral limit'
-      page' = maybe 1 fromIntegral page
-  in (,) -- total count
-     <$> fmap (sum . fmap E.unValue)
-         (select $
-         from $ \b -> do
-         _inner b
-         pure $ E.countRows)
-         -- paged data
-     <*> (select $
-          from $ \b -> do
-          _inner b
-          orderBy [desc (b ^. BookmarkTime)]
-          limit limit''
-          offset ((page' - 1) * limit'')
-          pure b)
+  (,) -- total count
+  <$> fmap (sum . fmap E.unValue)
+      (select $
+      from $ \b -> do
+      _inner b
+      pure $ E.countRows)
+      -- paged data
+  <*> (select $
+       from $ \b -> do
+       _inner b
+       orderBy [desc (b ^. BookmarkTime)]
+       limit limit'
+       offset ((page - 1) * limit')
+       pure b)
   where
     _inner b = do
       where_ $
