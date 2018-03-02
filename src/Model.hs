@@ -100,9 +100,6 @@ migrateIndexes =
 
 -- DB
 
-_sumValues :: [E.Value Int] -> Int
-_sumValues v = sum $ fmap E.unValue v
-
 getUserByName :: UserNameP -> DB (Maybe (Entity User))
 getUserByName (UserNameP uname) =
   return . headMay =<<
@@ -123,7 +120,7 @@ bookmarksQuery userId sharedp filterp tags limit' page =
   let limit'' = maybe 100 fromIntegral limit'
       page' = maybe 1 fromIntegral page
   in (,) -- total count
-     <$> fmap _sumValues
+     <$> fmap (sum . fmap E.unValue)
          (select $
          from $ \b -> do
          _inner b

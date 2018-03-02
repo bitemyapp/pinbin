@@ -40,6 +40,7 @@ _getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
        (cnt, bm) <- bookmarksQuery userId sharedp filterp pathtags limit page
        tg <- tagsQuery bm
        pure (cnt, bm, tg)
+  mroute <- getCurrentRoute 
   defaultLayout $ do $(widgetFile "user")
   where
     _lookupPagingParams =
