@@ -35,7 +35,7 @@ getUserTagsR uname pathtags =
 _getUser :: UserNameP -> SharedP -> FilterP -> TagsP -> Handler Html
 _getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
   (limit', page') <- _lookupPagingParams
-  let limit = maybe 100 fromIntegral limit'
+  let limit = maybe 120 fromIntegral limit'
       page  = maybe 1   fromIntegral page'
   (bcount, bmarks, alltags) <-
     runDB $
@@ -49,10 +49,11 @@ _getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
     $(widgetFile "user")
 
 _lookupPagingParams :: Handler (Maybe Int64, Maybe Int64)
-_lookupPagingParams =
-    (,)
-    <$> fmap parseMaybe (lookupGetParam "count")
-    <*> fmap parseMaybe (lookupGetParam "page")
-    where
+_lookupPagingParams = do
+  cq <- fmap parseMaybe (lookupGetParam "count")
+  cs <- fmap parseMaybe (lookupSession "count")
+  mapM_ (setSession "count" . (pack . show)) cq
+  pq <- fmap parseMaybe (lookupGetParam "page")
+  pure (cq <|> cs, pq)
+  where
     parseMaybe x = readMaybe . unpack =<< x
-

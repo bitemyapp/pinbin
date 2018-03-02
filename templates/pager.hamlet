@@ -11,4 +11,3 @@ $maybe route <- mroute
             <td width="80">
               <a .next_prev #top_later href="@?{(route, [("page", pack $ show $ page - 1)])}">
                 later »
-    <div style="clear:both">
