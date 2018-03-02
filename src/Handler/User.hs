@@ -17,23 +17,27 @@ import qualified Database.Esqueleto as E
 
 getUserR :: UserNameP -> Handler Html
 getUserR uname =
-  _getUser uname SharedAll (TagsP [])
+  _getUser uname SharedAll FilterAll (TagsP [])
 
 getUserSharedR :: UserNameP -> SharedP -> Handler Html
 getUserSharedR uname sharedp =
-  _getUser uname sharedp (TagsP [])
+  _getUser uname sharedp FilterAll (TagsP [])
+
+getUserFilterR :: UserNameP -> FilterP -> Handler Html
+getUserFilterR uname sharedp =
+  _getUser uname SharedAll sharedp (TagsP [])
 
 getUserTagsR :: UserNameP -> TagsP -> Handler Html
 getUserTagsR uname pathtags =
-  _getUser uname SharedAll pathtags
+  _getUser uname SharedAll FilterAll pathtags
 
-_getUser :: UserNameP -> SharedP -> TagsP -> Handler Html
-_getUser (UserNameP uname) sharedp (TagsP pathtags) = do
+_getUser :: UserNameP -> SharedP -> FilterP -> TagsP -> Handler Html
+_getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
   (limit, page) <- _lookupPagingParams
   (bcount, bmarks, alltags) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)
-       (cnt, bm) <- bookmarksQuery userId sharedp pathtags limit page
+       (cnt, bm) <- bookmarksQuery userId sharedp filterp pathtags limit page
        tg <- tagsQuery bm
        pure (cnt, bm, tg)
   defaultLayout $ do $(widgetFile "user")

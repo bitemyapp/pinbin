@@ -11,17 +11,15 @@
     <div>
       <a href="@{UserR (UserNameP uname)}" class="filter ">all
       ‧  
-      <a href="/u:#{uname}/private/" class="filter ">private
+      <a href="@{UserSharedR (UserNameP uname) SharedPrivate}" class="filter ">private
       ‧  
-      <a href="/u:#{uname}/public/" .filter >public
+      <a href="@{UserSharedR (UserNameP uname) SharedPublic}" .filter >public
       ‧  
-      <a href="/u:#{uname}/unread/" .filter >unread
+      <a href="@{UserFilterR (UserNameP uname) FilterUnread}" .filter >unread
       ‧  
-      <a href="/u:#{uname}/untagged/" .filter >untagged
+      <a href="@{UserFilterR (UserNameP uname) FilterUntagged}" .filter >untagged
       ‧  
-      <a href="/u:#{uname}/starred/" .filter >starred
-      ‧  
-      <a href="/u:#{uname}/tweets/" .filter >tweets
+      <a href="@{UserFilterR (UserNameP uname) FilterStarred}" .filter >starred
     <div style="clear:both">
   <div #bookmarks>
     $forall (Entity bk' Bookmark{..}) <- bmarks
@@ -47,7 +45,7 @@
                    <a .tag href="@{UserTagsR (UserNameP uname) (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
                <br>
   
-               <a .when href="#" title="">
+               <a .when href="@{UserFilterR (UserNameP uname) (FilterSingle bk)}" title="">
                  #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
                  
                <div ##{bk}.edit_links .edit_links style="display:inline">

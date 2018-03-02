@@ -56,11 +56,34 @@ BookmarkTag
   deriving Show Eq Typeable Ord
 |]
 
+newtype UserNameP =
+  UserNameP { unUserNameP :: Text }
+  deriving (Eq, Show, Read)
+
+newtype TagsP =
+  TagsP { unTagsP :: [Text] }
+  deriving (Eq, Show, Read)
+
 data SharedP
   = SharedAll
   | SharedPublic
   | SharedPrivate
   deriving (Eq, Show, Read)
+
+data FilterP
+  = FilterAll
+  | FilterUnread
+  | FilterUntagged
+  | FilterStarred
+  | FilterSingle Int64
+  deriving (Eq, Show, Read)
+
+newtype UnreadOnly =
+  UnreadOnly { unUnreadOnly :: Bool }
+  deriving (Eq, Show, Read)
+
+type Limit = Int
+type Page = Int
 
 -- Migration
 
@@ -80,30 +103,39 @@ migrateIndexes =
 _sumValues :: [E.Value Int] -> Int
 _sumValues v = sum $ fmap E.unValue v
 
-getUserByName :: Text -> DB (Maybe (Entity User))
-getUserByName uname =
+getUserByName :: UserNameP -> DB (Maybe (Entity User))
+getUserByName (UserNameP uname) =
   return . headMay =<<
   (select $
    from $ \u -> do
    where_ (u ^. UserName E.==. val uname)
    pure u)
 
-bookmarksQuery :: Key User -> SharedP -> [P.Tag] -> Maybe Int -> Maybe Int -> DB (Int, [Entity Bookmark])
-bookmarksQuery userId sharedp tags limit' page =
-    (,) -- total count
-    <$> fmap _sumValues
-        (select $
-        from $ \b -> do
-        _inner b
-        pure $ E.countRows)
-        -- paged data
-    <*> (select $
+bookmarksQuery
+  :: Key User
+  -> SharedP
+  -> FilterP
+  -> [P.Tag]
+  -> Maybe Limit
+  -> Maybe Page
+  -> DB (Int, [Entity Bookmark])
+bookmarksQuery userId sharedp filterp tags limit' page =
+  let limit'' = maybe 100 fromIntegral limit'
+      page' = maybe 1 fromIntegral page
+  in (,) -- total count
+     <$> fmap _sumValues
+         (select $
          from $ \b -> do
          _inner b
-         orderBy [desc (b ^. BookmarkTime)]
-         limit limit''
-         offset ((page' - 1) * limit'')
-         pure b)
+         pure $ E.countRows)
+         -- paged data
+     <*> (select $
+          from $ \b -> do
+          _inner b
+          orderBy [desc (b ^. BookmarkTime)]
+          limit limit''
+          offset ((page' - 1) * limit'')
+          pure b)
   where
     _inner b = do
       where_ $
@@ -115,10 +147,14 @@ bookmarksQuery userId sharedp tags limit' page =
         `appEndo` (b ^. BookmarkUserId E.==. val userId)
       case sharedp of
         SharedAll -> pure ()
-        SharedPublic -> where_ (b ^. BookmarkShared E.==. val True)
+        SharedPublic ->  where_ (b ^. BookmarkShared E.==. val True)
         SharedPrivate -> where_ (b ^. BookmarkShared E.==. val False)
-    limit'' = maybe 100 fromIntegral limit'
-    page' = maybe 1 fromIntegral page
+      case filterp of
+        FilterAll -> pure ()
+        FilterUnread ->   where_ (b ^. BookmarkToRead E.==. val True)
+        FilterStarred ->  where_ (b ^. BookmarkSelected E.==. val True)
+        FilterSingle i -> where_ (b ^. BookmarkId E.==. val (toSqlKey i))
+        FilterUntagged -> where_ $ notExists $ from (\t -> where_ $ t ^. BookmarkTagBookmarkId E.==. b ^. BookmarkId)
 
 tagsQuery :: [Entity Bookmark] -> DB [Entity BookmarkTag]
 tagsQuery bmarks =
