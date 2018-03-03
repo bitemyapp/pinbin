@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+
 module Import.NoFoundation
     ( module Import
     ) where
@@ -13,3 +15,4 @@ import Yesod.Default.Config2 as Import
 import Model as Import
 import ModelCrypto as Import
 import Types as Import
+import Pretty

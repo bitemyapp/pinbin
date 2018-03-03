@@ -8,19 +8,19 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Foundation where
 
 import Import.NoFoundation
-import Database.Persist.Sql (ConnectionPool, runSqlPool, toSqlKey)
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 
 -- import Yesod.Auth.Dummy
 
 import Yesod.Default.Util   (addStaticContentExternal)
-import Yesod.Core
 import Yesod.Core.Types
 import Yesod.Auth.Message
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -137,6 +137,10 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized _ _ = return Authorized
+      -- do muid <- maybeAuthId
+      --    return $ case muid of
+      --        Nothing -> AuthenticationRequired
+      --        Just _ -> Authorized
 
 instance YesodAuth App where
   type AuthId App = UserId
@@ -146,18 +150,17 @@ instance YesodAuth App where
   loginDest = const HomeR
   logoutDest = const HomeR
   redirectToReferer _ = True
+
+  loginHandler :: AuthHandler App Html
   loginHandler = lift $ authLayout $ do
     setTitleI LoginTitle
+    void $ handlerToWidget $ setCredsRedirect $ mkLoginCreds "jonschoning" "test"
 
 instance YesodAuthPersist App
 
 -- -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
-isAuthenticated = do
-    muid <- maybeAuthId
-    return $ case muid of
-        Nothing -> Unauthorized "You must login to access this page"
-        Just _ -> Authorized
+isAuthenticated = maybe (Unauthorized "") (const Authorized) <$> maybeAuthId
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage

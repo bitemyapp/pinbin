@@ -14,6 +14,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Model where
 
@@ -24,11 +25,11 @@ import Control.Monad.Writer hiding ((<>), mapM_)
 
 import Types
 import ModelCrypto
+import Pretty
 import ClassyPrelude.Yesod
 
 import Control.Monad.Trans.Maybe
 import Database.Esqueleto hiding ((==.))
-import Database.Persist.Sql
 import Yesod.Auth
 import Yesod.Auth.Message (AuthMessage(InvalidUsernamePass))
 import qualified Database.Esqueleto as E
