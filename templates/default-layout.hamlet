@@ -3,8 +3,15 @@
     <div #logo>
       <img .pin_logo src="@{StaticR images_bluepin_gif}">
         <a #pinboard_name>Pinboard-Server
-          <!-- <span>(<a .banner_username href="@{UserR (UserNameP uname)}">#{uname}</a>)
-               <div #timer>#{pageLoadTime} s -->
+        $maybe (uid, User{..}) <- muser
+          <span>(<a class="banner_username" href="@{UserR (UserNameP userName)}">#{userName}<a>)</span>
+        <!-- <div #timer>#{pageLoadTime} s -->
     <div #top_menu>
+      $maybe (uid, User{..}) <- muser
+        <a href="@{AuthR LogoutR}">
+          log out
+      $nothing
+        <a href="@{AuthR LoginR}">
+          log in
     <div style="clear:both">
   ^{widget}

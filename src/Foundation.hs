@@ -10,6 +10,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
 module Foundation where
 
@@ -23,6 +24,7 @@ import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types
 import Yesod.Auth.Message
+import Yesod.Auth
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
@@ -106,9 +108,9 @@ instance Yesod App where
 
     defaultLayout widget = do
         master <- getYesod
-        -- mmsg <- getMessage
-        -- muser <- maybeAuthPair
-        -- mcurrentRoute <- getCurrentRoute
+        mmsg <- getMessage
+        muser <- maybeAuthPair
+        mcurrentRoute <- getCurrentRoute
         pc <- widgetToPageContent $ do
             addStylesheet (StaticR css_main_css)
             $(widgetFile "default-layout")
@@ -136,11 +138,13 @@ instance Yesod App where
 
     authRoute _ = Just $ AuthR LoginR
     isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized (UserR _) _ = do
+      muid <- maybeAuthId
+      return $
+        case muid of
+          Nothing -> AuthenticationRequired
+          Just _ -> Authorized
     isAuthorized _ _ = return Authorized
-      -- do muid <- maybeAuthId
-      --    return $ case muid of
-      --        Nothing -> AuthenticationRequired
-      --        Just _ -> Authorized
 
 instance YesodAuth App where
   type AuthId App = UserId
@@ -157,6 +161,25 @@ instance YesodAuth App where
     void $ handlerToWidget $ setCredsRedirect $ mkLoginCreds "jonschoning" "test"
 
 instance YesodAuthPersist App
+
+mkLoginCreds :: Text -> Text -> Creds master
+mkLoginCreds username password =
+  Creds
+  { credsPlugin = ""
+  , credsIdent = username
+  , credsExtra = [("password", password)]
+  }
+
+authenticateCreds
+  :: (AuthId master ~ UserId)
+  => Creds master -> DB (AuthenticationResult master)
+authenticateCreds creds =
+  authenticatePW
+    (credsIdent creds)
+    (fromMaybe "" (lookup "password" (credsExtra creds))) >>=
+  \case
+    Nothing -> pure (UserError InvalidUsernamePass)
+    Just (Entity uid _) -> pure (Authenticated uid)
 
 -- -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult

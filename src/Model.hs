@@ -30,8 +30,6 @@ import ClassyPrelude.Yesod
 
 import Control.Monad.Trans.Maybe
 import Database.Esqueleto hiding ((==.))
-import Yesod.Auth
-import Yesod.Auth.Message (AuthMessage(InvalidUsernamePass))
 import qualified Database.Esqueleto as E
 
 -- Physical model
@@ -122,26 +120,15 @@ migrateIndexes =
 
 -- User
 
-mkLoginCreds :: Text -> Text -> Creds master
-mkLoginCreds username password =
-  Creds
-  { credsPlugin = ""
-  , credsIdent = username
-  , credsExtra = [("password", password)]
-  }
-
-authenticateCreds
-  :: (AuthId master ~ UserId)
-  => Creds master -> DB (AuthenticationResult master)
-authenticateCreds creds =
-  fromMaybe (UserError InvalidUsernamePass) <$>
-  (runMaybeT $
-   do Entity uid user <- MaybeT (getBy (UniqueUserName (credsIdent creds)))
-      if passwordMatches
-           (userPasswordHash user)
-           (fromMaybe "" (lookup "password" (credsExtra creds)))
-        then pure (Authenticated uid)
-        else MaybeT (pure Nothing))
+authenticatePW :: Text -> Text -> DB (Maybe (Entity User))
+authenticatePW username password = do
+   muser <- getBy (UniqueUserName username)
+   case muser of
+     Nothing -> pure Nothing
+     Just e@(Entity _ user) -> 
+        if passwordMatches (userPasswordHash user) (password)
+          then pure $ Just e
+          else pure $ Nothing
 
 getUserByName :: UserNameP -> DB (Maybe (Entity User))
 getUserByName (UserNameP uname) =

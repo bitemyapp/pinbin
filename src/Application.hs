@@ -25,6 +25,7 @@ import Control.Monad.Logger (liftLoc, runLoggingT)
 import Database.Persist.Sqlite
        (createSqlitePool, sqlDatabase, sqlPoolSize)
 import Import
+import Yesod.Auth (getAuth)
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.Wai (Middleware)
 import Network.Wai.Handler.Warp
