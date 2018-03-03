@@ -3,6 +3,8 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
+/auth  AuthR  Auth getAuth
+
 / HomeR GET
 !/#UserNameP UserR GET
 !/#UserNameP/#SharedP UserSharedR GET

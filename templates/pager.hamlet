@@ -3,11 +3,11 @@ $maybe route <- mroute
     <table style="float:left" border="0">
       <tbody>
         <tr>
-          $if (fromIntegral (length bmarks)) >= limit
+          $if fromIntegral bcount >= limit
             <td width="80">
               <a .next_prev #top_earlier href="@?{(route, [("page", pack $ show $ page + 1)])}">
                 « earlier
-          $if (page) > 1
+          $if page > 1
             <td width="80">
               <a .next_prev #top_later href="@?{(route, [("page", pack $ show $ page - 1)])}">
                 later »

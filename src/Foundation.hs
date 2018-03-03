@@ -1,12 +1,13 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Foundation where
@@ -19,7 +20,8 @@ import Text.Jasmine         (minifym)
 -- import Yesod.Auth.Dummy
 
 import Yesod.Default.Util   (addStaticContentExternal)
-import Yesod.Core.Types     (Logger)
+import Yesod.Core
+import Yesod.Core.Types
 import Yesod.Auth.Message
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
@@ -35,7 +37,6 @@ data App = App
     }
 
 mkYesodData "App" $(parseRoutesFile "config/routes")
-
 
 instance PathPiece UserNameP where
   toPathPiece (UserNameP i) = "u:" <> i
@@ -82,6 +83,15 @@ instance PathPiece FilterP where
             _ -> Nothing
         _ -> Nothing
 
+instance YesodPersist App where
+    type YesodPersistBackend App = SqlBackend
+    runDB action = do
+        master <- getYesod
+        runSqlPool action (appConnPool master)
+
+instance YesodPersistRunner App where
+    getDBRunner = defaultGetDBRunner appConnPool
+
 instance Yesod App where
     approot = ApprootRequest $ \app req ->
         case appRoot (appSettings app) of
@@ -97,26 +107,12 @@ instance Yesod App where
     defaultLayout widget = do
         master <- getYesod
         -- mmsg <- getMessage
-
         -- muser <- maybeAuthPair
         -- mcurrentRoute <- getCurrentRoute
-
         pc <- widgetToPageContent $ do
             addStylesheet (StaticR css_main_css)
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
-
-    -- authRoute _ = Just $ AuthR LoginR
-
-    -- Routes not requiring authentication.
-    -- isAuthorized (AuthR _) _ = return Authorized
-    -- isAuthorized CommentR _ = return Authorized
-    -- isAuthorized HomeR _ = return Authorized
-    -- isAuthorized FaviconR _ = return Authorized
-    -- isAuthorized RobotsR _ = return Authorized
-    -- isAuthorized (StaticR _) _ = return Authorized
-
-    -- isAuthorized ProfileR _ = isAuthenticated
 
     addStaticContent ext mime content = do
         master <- getYesod
@@ -130,63 +126,30 @@ instance Yesod App where
             mime
             content
       where
-        -- Generate a unique filename based on the content itself
         genFileName lbs = "autogen-" ++ base64md5 lbs
 
-    -- What messages should be logged. The following includes all messages when
-    -- in development, and warnings and errors in production.
     shouldLog app _source level =
         appShouldLogAll (appSettings app)
             || level == LevelWarn
             || level == LevelError
-
     makeLogger = return . appLogger
 
--- How to run database actions.
-instance YesodPersist App where
-    type YesodPersistBackend App = SqlBackend
-    runDB action = do
-        master <- getYesod
-        runSqlPool action (appConnPool master)
-instance YesodPersistRunner App where
-    getDBRunner = defaultGetDBRunner appConnPool
-
-
--- This instance is required to use forms. You can modify renderMessage to
--- achieve customized and internationalized form validation messages.
-instance RenderMessage App FormMessage where
-    renderMessage _ _ = defaultFormMessage
-
--- Useful when writing code that is re-usable outside of the Handler context.
--- An example is background jobs that send email.
--- This can also be useful for writing code that works across multiple Yesod applications.
-instance HasHttpManager App where
-    getHttpManager = appHttpManager
-
-unsafeHandler :: App -> Handler a -> IO a
-unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
-
-instance YesodAuthPersist App
+    authRoute _ = Just $ AuthR LoginR
+    isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized _ _ = return Authorized
 
 instance YesodAuth App where
   type AuthId App = UserId
-  authenticate creds = do
-    case toSqlKey <$> readMay (credsIdent creds) of
-      Nothing -> return (UserError InvalidUsernamePass)
-      Just uid -> do
-        getAuthEntity uid >>= \case
-          Nothing -> return (UserError InvalidUsernamePass)
-          Just user ->
-            if passwordMatches
-                 (userPasswordHash user)
-                 (fromMaybe "" (lookup "password" (credsExtra creds)))
-              then pure (Authenticated uid)
-              else pure (UserError InvalidUsernamePass)
   authHttpManager = getHttpManager
+  authenticate = runDB . authenticateCreds
   authPlugins = const []
   loginDest = const HomeR
   logoutDest = const HomeR
   redirectToReferer _ = True
+  loginHandler = lift $ authLayout $ do
+    setTitleI LoginTitle
+
+instance YesodAuthPersist App
 
 -- -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
@@ -196,3 +159,11 @@ isAuthenticated = do
         Nothing -> Unauthorized "You must login to access this page"
         Just _ -> Authorized
 
+instance RenderMessage App FormMessage where
+    renderMessage _ _ = defaultFormMessage
+
+instance HasHttpManager App where
+    getHttpManager = appHttpManager
+
+unsafeHandler :: App -> Handler a -> IO a
+unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger

@@ -24,3 +24,4 @@ getRobotsR = return $ TypedContent typePlain
 getLogoR :: Handler TypedContent
 getLogoR = return $ TypedContent typeGif
                     $ toContent $(embedFile "static/images/bluepin.gif")
+

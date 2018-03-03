@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,9 +26,14 @@ import Types
 import ModelCrypto
 import ClassyPrelude.Yesod
 
-import Database.Persist.Sql
+import Control.Monad.Trans.Maybe
 import Database.Esqueleto hiding ((==.))
+import Database.Persist.Sql
+import Yesod.Auth
+import Yesod.Auth.Message (AuthMessage(InvalidUsernamePass))
 import qualified Database.Esqueleto as E
+
+-- Physical model
 
 share [mkPersist sqlSettings, mkMigrate "migrateSchema"] [persistLowerCase| 
 User
@@ -58,6 +64,9 @@ BookmarkTag
   UniqueUserBookmarkIdTagSeq userId bookmarkId tag seq
   deriving Show Eq Typeable Ord
 |]
+
+
+-- newtypes
 
 newtype UserNameP =
   UserNameP { unUserNameP :: Text }
@@ -110,7 +119,28 @@ migrateIndexes =
     ]
 
 
--- DB
+-- User
+
+mkLoginCreds :: Text -> Text -> Creds master
+mkLoginCreds username password =
+  Creds
+  { credsPlugin = ""
+  , credsIdent = username
+  , credsExtra = [("password", password)]
+  }
+
+authenticateCreds
+  :: (AuthId master ~ UserId)
+  => Creds master -> DB (AuthenticationResult master)
+authenticateCreds creds =
+  fromMaybe (UserError InvalidUsernamePass) <$>
+  (runMaybeT $
+   do Entity uid user <- MaybeT (getBy (UniqueUserName (credsIdent creds)))
+      if passwordMatches
+           (userPasswordHash user)
+           (fromMaybe "" (lookup "password" (credsExtra creds)))
+        then pure (Authenticated uid)
+        else MaybeT (pure Nothing))
 
 getUserByName :: UserNameP -> DB (Maybe (Entity User))
 getUserByName (UserNameP uname) =
@@ -119,6 +149,8 @@ getUserByName (UserNameP uname) =
    from $ \u -> do
    where_ (u ^. UserName E.==. val uname)
    pure u)
+
+-- bookmarks
 
 bookmarksQuery
   :: Key User
@@ -171,6 +203,8 @@ tagsQuery bmarks =
   orderBy [asc (t ^. BookmarkTagSeq)]
   pure t
 
+-- Bookmark Files
+
 bookmarkEntityToTags :: Entity Bookmark -> [P.Tag] -> [BookmarkTag]
 bookmarkEntityToTags (Entity {entityKey = bookmarkId
                              ,entityVal = Bookmark {..}}) tags =
@@ -178,11 +212,11 @@ bookmarkEntityToTags (Entity {entityKey = bookmarkId
     (\(i, tag) -> BookmarkTag bookmarkUserId tag bookmarkId i)
     (zip [1 ..] tags)
 
+
 postToBookmark :: UserId -> P.Post -> Bookmark
 postToBookmark user P.Post {..} =
   Bookmark user postHref postDescription postExtended postTime postShared postToRead False
 
--- Bookmark Files
 
 insertFileBookmarks :: Key User -> FilePath -> DB ()
 insertFileBookmarks userId bookmarkFile = do
