@@ -11,4 +11,5 @@ import Yesod.Core.Types as Import (loggerSet)
 import Yesod.Default.Config2 as Import
 
 import Model as Import
+import ModelCrypto as Import
 import Types as Import

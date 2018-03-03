@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 88639c0cc9445f10797b23ca957c1b2caf0a58e53598341c23cff1012f14d8e8
+-- hash: d7c9fd49869fa14b8a0bbd579900dee25a6e3d34ae9cb64d86be99d5ee383c70
 
 name:           pinboard-server
 version:        0.0.0
@@ -55,6 +55,7 @@ library
     , template-haskell
     , text >=0.11 && <2.0
     , time
+    , transformers >=0.2.2
     , unordered-containers
     , vector
     , wai
@@ -130,6 +131,7 @@ executable migration
     , template-haskell
     , text >=0.11 && <2.0
     , time
+    , transformers >=0.2.2
     , unordered-containers
     , vector
     , wai
@@ -187,6 +189,7 @@ executable pinboard-server
     , template-haskell
     , text >=0.11 && <2.0
     , time
+    , transformers >=0.2.2
     , unordered-containers
     , vector
     , wai
@@ -248,6 +251,7 @@ test-suite test
     , template-haskell
     , text >=0.11 && <2.0
     , time
+    , transformers >=0.2.2
     , unordered-containers
     , vector
     , wai

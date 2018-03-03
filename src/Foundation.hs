@@ -12,7 +12,7 @@
 module Foundation where
 
 import Import.NoFoundation
-import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import Database.Persist.Sql (ConnectionPool, runSqlPool, toSqlKey)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 
@@ -20,6 +20,7 @@ import Text.Jasmine         (minifym)
 
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
+import Yesod.Auth.Message
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
@@ -117,10 +118,6 @@ instance Yesod App where
 
     -- isAuthorized ProfileR _ = isAuthenticated
 
-    -- This function creates static content files in the static folder
-    -- and names them based on a hash of their content. This allows
-    -- expiration dates to be set far in the future without worry of
-    -- users receiving stale content.
     addStaticContent ext mime content = do
         master <- getYesod
         let staticDir = appStaticDir (appSettings master)
@@ -169,38 +166,33 @@ instance HasHttpManager App where
 unsafeHandler :: App -> Handler a -> IO a
 unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 
--- instance YesodAuth App where
---     type AuthId App = UserId
+instance YesodAuthPersist App
 
---     -- Where to send a user after successful login
---     loginDest _ = HomeR
---     -- Where to send a user after logout
---     logoutDest _ = HomeR
---     -- Override the above two destinations when a Referer: header is present
---     redirectToReferer _ = True
-
---     authenticate creds = runDB $ do
---         x <- getBy $ UniqueUser $ credsIdent creds
---         case x of
---             Just (Entity uid _) -> return $ Authenticated uid
---             Nothing -> Authenticated <$> insert User
---                 { userIdent = credsIdent creds
---                 , userPassword = Nothing
---                 }
-
---     -- You can add other plugins like Google Email, email or OAuth here
---     authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins
---         -- Enable authDummy login if enabled.
---         where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
-
---     authHttpManager = getHttpManager
+instance YesodAuth App where
+  type AuthId App = UserId
+  authenticate creds = do
+    case toSqlKey <$> readMay (credsIdent creds) of
+      Nothing -> return (UserError InvalidUsernamePass)
+      Just uid -> do
+        getAuthEntity uid >>= \case
+          Nothing -> return (UserError InvalidUsernamePass)
+          Just user ->
+            if passwordMatches
+                 (userPasswordHash user)
+                 (fromMaybe "" (lookup "password" (credsExtra creds)))
+              then pure (Authenticated uid)
+              else pure (UserError InvalidUsernamePass)
+  authHttpManager = getHttpManager
+  authPlugins = const []
+  loginDest = const HomeR
+  logoutDest = const HomeR
+  redirectToReferer _ = True
 
 -- -- | Access function to determine if a user is logged in.
--- isAuthenticated :: Handler AuthResult
--- isAuthenticated = do
---     muid <- maybeAuthId
---     return $ case muid of
---         Nothing -> Unauthorized "You must login to access this page"
---         Just _ -> Authorized
+isAuthenticated :: Handler AuthResult
+isAuthenticated = do
+    muid <- maybeAuthId
+    return $ case muid of
+        Nothing -> Unauthorized "You must login to access this page"
+        Just _ -> Authorized
 
--- instance YesodAuthPersist App
