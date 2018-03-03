@@ -6,5 +6,5 @@
           <!-- <span>(<a .banner_username href="@{UserR (UserNameP uname)}">#{uname}</a>)
                <div #timer>#{pageLoadTime} s -->
     <div #top_menu>
-    <div style="clear:both"></div>
+    <div style="clear:both">
   ^{widget}

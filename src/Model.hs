@@ -19,9 +19,10 @@ module Model where
 import qualified Data.Aeson as A
 import qualified Pinboard as P
 
-import Control.Monad.Writer hiding ((<>))
+import Control.Monad.Writer hiding ((<>), mapM_)
 
 import Types
+import ModelCrypto
 import ClassyPrelude.Yesod
 
 import Database.Persist.Sql
@@ -31,6 +32,8 @@ import qualified Database.Esqueleto as E
 share [mkPersist sqlSettings, mkMigrate "migrateSchema"] [persistLowerCase| 
 User
   name Text
+  passwordHash BCrypt
+  apiToken Text Maybe
   UniqueUserName name
   deriving Show Eq Typeable Ord
 
@@ -86,6 +89,15 @@ type Limit = Int64
 type Page = Int64
 
 -- Migration
+
+migrateAll :: Migration
+migrateAll = migrateSchema >> migrateIndexes
+
+dumpMigration :: DB ()
+dumpMigration = printMigration migrateAll
+
+runMigrations :: DB ()
+runMigrations = runMigration migrateAll
 
 toMigration :: [Text] -> Migration
 toMigration = lift . tell . fmap (False ,)
@@ -172,14 +184,14 @@ postToBookmark user P.Post {..} =
 
 -- Bookmark Files
 
-insertFileBookmarks :: MonadLogger m => Key User -> FilePath -> DBM m ()
+insertFileBookmarks :: Key User -> FilePath -> DB ()
 insertFileBookmarks userId bookmarkFile = do
-  $logDebug $ "Reading bookmark file: " <> pack bookmarkFile
+  -- $logDebug $ "Reading bookmark file: " <> pack bookmarkFile
   posts' <- liftIO $ readBookmarkFileJson bookmarkFile
   case posts' of
-      Left e -> $logError $ pack e
+      Left e -> print e
       Right posts -> do
-        $logDebug $ (pack . show . length) posts <> " bookmarks read"
+        -- $logDebug $ (pack . show . length) posts <> " bookmarks read"
         void $ do
             let bookmarks = fmap (postToBookmark userId) posts
             bookmarkIds <- insertMany bookmarks
@@ -188,3 +200,4 @@ insertFileBookmarks userId bookmarkFile = do
   where
     readBookmarkFileJson :: MonadIO m => FilePath -> m (Either String [P.Post])
     readBookmarkFileJson fpath = pure . A.eitherDecode' . fromStrict =<< readFile fpath
+

@@ -23,7 +23,7 @@ module Application
 
 import Control.Monad.Logger (liftLoc, runLoggingT)
 import Database.Persist.Sqlite
-       (createSqlitePool, runSqlPool, sqlDatabase, sqlPoolSize)
+       (createSqlitePool, sqlDatabase, sqlPoolSize)
 import Import
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.Wai (Middleware)
@@ -61,9 +61,9 @@ makeFoundation appSettings = do
     createSqlitePool
       (sqlDatabase (appDatabaseConf appSettings))
       (sqlPoolSize (appDatabaseConf appSettings))
-  runLoggingT
-    (runSqlPool (mapM_ runMigration [migrateSchema, migrateIndexes]) pool)
-    logFunc
+  -- runLoggingT
+  --   (runSqlPool runMigrations pool)
+  --   logFunc
   return (mkFoundation pool)
 
 makeApplication :: App -> IO Application
