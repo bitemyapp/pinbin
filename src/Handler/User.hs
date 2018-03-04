@@ -17,7 +17,7 @@ import qualified Database.Esqueleto as E
 -- import Text.Julius (RawJS (..))
 
 getUserR :: UserNameP -> Handler Html
-getUserR uname =
+getUserR uname@(UserNameP name) = do
   _getUser uname SharedAll FilterAll (TagsP [])
 
 getUserSharedR :: UserNameP -> SharedP -> Handler Html
@@ -25,18 +25,24 @@ getUserSharedR uname sharedp =
   _getUser uname sharedp FilterAll (TagsP [])
 
 getUserFilterR :: UserNameP -> FilterP -> Handler Html
-getUserFilterR uname sharedp =
-  _getUser uname SharedAll sharedp (TagsP [])
+getUserFilterR uname filterp =
+  _getUser uname SharedAll filterp (TagsP [])
 
 getUserTagsR :: UserNameP -> TagsP -> Handler Html
 getUserTagsR uname pathtags =
   _getUser uname SharedAll FilterAll pathtags
 
 _getUser :: UserNameP -> SharedP -> FilterP -> TagsP -> Handler Html
-_getUser (UserNameP uname) sharedp filterp (TagsP pathtags) = do
+_getUser unamep@(UserNameP uname) sharedp' filterp' (TagsP pathtags) = do
+  mauthuname <- maybeAuthUsername
   (limit', page') <- _lookupPagingParams
   let limit = maybe 120 fromIntegral limit'
       page  = maybe 1   fromIntegral page'
+      isowner = maybe False (== uname) mauthuname
+      sharedp = if isowner then sharedp' else SharedPublic
+      filterp = case filterp' of
+        FilterSingle _ -> filterp'
+        _ -> if isowner then filterp' else FilterAll
   (bcount, bmarks, alltags) <-
     runDB $
     do Entity userId _ <- getBy404 (UniqueUserName uname)

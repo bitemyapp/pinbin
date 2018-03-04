@@ -24,7 +24,6 @@ import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types
 import Yesod.Auth.Message
-import Yesod.Auth
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
@@ -101,7 +100,7 @@ instance Yesod App where
             Just root -> root
 
     makeSessionBackend _ = Just <$> defaultClientSessionBackend
-        120    -- timeout in minutes
+        10080 -- min (7 days)
         "config/client_session_key.aes"
 
     yesodMiddleware = defaultYesodMiddleware
@@ -139,22 +138,17 @@ instance Yesod App where
 
     authRoute _ = Just $ AuthR LoginR
     isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized (UserR _) _ = do
-      muid <- maybeAuthId
-      return $
-        case muid of
-          Nothing -> AuthenticationRequired
-          Just _ -> Authorized
     isAuthorized _ _ = return Authorized
 
 instance YesodAuth App where
   type AuthId App = UserId
   authHttpManager = getHttpManager
-  authenticate = authenticateCreds
   authPlugins _ = [dbAuthPlugin]
+  authenticate = authenticateCreds
   loginDest = const HomeR
   logoutDest = const HomeR
   onLogin = pure ()
+  redirectToReferer = const True
 
 instance YesodAuthPersist App
 
@@ -173,7 +167,7 @@ dbAuthPlugin = AuthPlugin dbAuthPluginName dbDispatch dbLoginHandler
       $(widgetFile "login")
 
 dbLoginR :: AuthRoute
-dbLoginR = PluginR "db" ["login"]
+dbLoginR = PluginR dbAuthPluginName ["login"]
 
 dbPostLoginR ::  AuthHandler master TypedContent
 dbPostLoginR = do
@@ -208,6 +202,10 @@ authenticateCreds creds =
 isAuthenticated :: Handler AuthResult
 isAuthenticated = maybe (Unauthorized "") (const Authorized) <$> maybeAuthId
 
+maybeAuthUsername :: Handler (Maybe Text)
+maybeAuthUsername = runMaybeT $ do
+  Entity _ user <- MaybeT maybeAuth
+  pure $ userName user
 
 -- util
 
