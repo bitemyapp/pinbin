@@ -112,6 +112,7 @@ instance Yesod App where
         muser <- maybeAuthPair
         mcurrentRoute <- getCurrentRoute
         pc <- widgetToPageContent $ do
+            setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
@@ -149,31 +150,54 @@ instance Yesod App where
 instance YesodAuth App where
   type AuthId App = UserId
   authHttpManager = getHttpManager
-  authenticate = runDB . authenticateCreds
-  authPlugins = const []
+  authenticate = authenticateCreds
+  authPlugins _ = [dbAuthPlugin]
   loginDest = const HomeR
   logoutDest = const HomeR
-  redirectToReferer _ = True
-
-  loginHandler :: AuthHandler App Html
-  loginHandler = lift $ authLayout $ do
-    setTitleI LoginTitle
-    void $ handlerToWidget $ setCredsRedirect $ mkLoginCreds "jonschoning" "test"
+  onLogin = pure ()
 
 instance YesodAuthPersist App
 
-mkLoginCreds :: Text -> Text -> Creds master
-mkLoginCreds username password =
+-- dbAuthPlugin
+
+dbAuthPluginName :: Text
+dbAuthPluginName = "db"
+
+dbAuthPlugin :: AuthPlugin App
+dbAuthPlugin = AuthPlugin dbAuthPluginName dbDispatch dbLoginHandler
+  where
+    dbDispatch "POST" ["login"] = dbPostLoginR >>= sendResponse
+    dbDispatch _ _ = notFound
+    dbLoginHandler toParent = do
+      setTitle "Pinboard-Server | Log In"
+      $(widgetFile "login")
+
+dbLoginR :: AuthRoute
+dbLoginR = PluginR "db" ["login"]
+
+dbPostLoginR ::  AuthHandler master TypedContent
+dbPostLoginR = do
+  mresult <- lift $ runInputPostResult (dbLoginCreds
+                    <$> ireq textField "username"
+                    <*> ireq textField "password")
+  case mresult of
+    FormSuccess creds -> lift $ setCredsRedirect creds
+    _ -> loginErrorMessageI LoginR InvalidUsernamePass
+
+
+dbLoginCreds :: Text -> Text -> Creds master
+dbLoginCreds username password =
   Creds
-  { credsPlugin = ""
+  { credsPlugin = dbAuthPluginName
   , credsIdent = username
   , credsExtra = [("password", password)]
   }
 
 authenticateCreds
   :: (AuthId master ~ UserId)
-  => Creds master -> DB (AuthenticationResult master)
+  => Creds master -> Handler (AuthenticationResult App)
 authenticateCreds creds =
+  runDB $
   authenticatePW
     (credsIdent creds)
     (fromMaybe "" (lookup "password" (credsExtra creds))) >>=
@@ -181,9 +205,11 @@ authenticateCreds creds =
     Nothing -> pure (UserError InvalidUsernamePass)
     Just (Entity uid _) -> pure (Authenticated uid)
 
--- -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
 isAuthenticated = maybe (Unauthorized "") (const Authorized) <$> maybeAuthId
+
+
+-- util
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage

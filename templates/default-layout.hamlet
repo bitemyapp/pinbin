@@ -14,4 +14,8 @@
         <a href="@{AuthR LoginR}">
           log in
     <div style="clear:both">
+
+  $maybe msg <- mmsg
+    <div .alert.alert-info #message>#{preEscapedToMarkup msg}
+
   ^{widget}
