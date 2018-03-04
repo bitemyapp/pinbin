@@ -1,3 +1,9 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
 body
 {
   color:#333;
@@ -19,7 +25,8 @@ blockquote
 
 #content
 { 
-    width:1050px;
+    width: 100%;
+    max-width:1050px;
     margin-left:auto;
     margin-right:auto 
 
@@ -148,7 +155,8 @@ a.copy_link:hover { color:#44d; }
 { 
   margin-bottom:1.3em;
   padding:3px;
-  width:600px;
+  width:100%;
+  max-width:600px;
   margin-left:0px;
   border:0px solid red;
   float:left;
@@ -179,7 +187,8 @@ a.list { color:#163; }
   color:black;
   border-bottom:1px dotted #aaa;
   margin-bottom:0.7em;
-  width:980px;
+  width:100%;
+  max-width:980px;
   padding-bottom:9px;
   text-align:left;
 }
@@ -191,11 +200,11 @@ a.list { color:#163; }
 #pinboard_name { font-size:18px; }
 
 
-#logo { float:left;width:325px;color:#aaa;}
+#logo { float:left;color:#aaa;}
 .pin_logo { margin-right:5px; }
 #top_menu 
 { 
-    margin-top:2px;
+    margin-top:6px;
     float:right; 
 }
 #top_menu a { color:blue }
@@ -207,7 +216,8 @@ a.list { color:#163; }
     color:#333;
     background:#ced;
     padding:10px;
-    width:550px;
+    width: 100%;
+    max-width:550px;
     border:1px solid #acc; 
 }
 
@@ -221,7 +231,8 @@ a.list { color:#163; }
 /* BASIC PAGE STRUCTURE */
 #main_column
 {
-    width:700px;
+    width: 100%;
+    max-width:700px;
     min-height:700px;
     text-align:left;
     float:left;
@@ -255,7 +266,7 @@ a.rss_link
 .bookmark_count_box
 {
     float:left;
-    width:36px;
+    min-width:50px;
     padding-right:1.1em;
 }
 
@@ -921,3 +932,21 @@ ol.download_instructions
     border-bottom:1px solid #ccc
 }
 
+/* mobile device */
+@media only screen and (max-width : 750px) {
+    body { 
+        -webkit-text-size-adjust: none; 
+        font-size: 14px;
+    }
+    .display {
+      float: none
+    }
+}
+
+@media only screen and (max-width : 500px) {
+    .filters {
+      clear: both;
+      position: relative;
+      top: 2px;
+    }
+}

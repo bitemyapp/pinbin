@@ -9,7 +9,7 @@
     <div .bookmark_count_box>
       <span .bookmark_count>#{bcount}</span>
     $if isowner
-      <div>
+      <div .filters >
         <a href="@{UserR unamep}" class="filter ">all
         ‧  
         <a href="@{UserSharedR unamep SharedPrivate}" class="filter ">private

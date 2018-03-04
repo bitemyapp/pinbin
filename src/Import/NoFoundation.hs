@@ -16,4 +16,4 @@ import Yesod.Default.Config2 as Import
 import Model as Import
 import ModelCrypto as Import
 import Types as Import
-import Pretty
+import Pretty as Import
