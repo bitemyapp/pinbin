@@ -116,7 +116,7 @@ instance Yesod App where
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
-            addScript (StaticR js_jquery_3_3_1_min_js)
+            addScript (StaticR js_jquery_3_3_1_slim_min_js) 
             addScript (StaticR js_js_cookie_2_2_0_min_js)
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
