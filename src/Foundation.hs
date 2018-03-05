@@ -109,8 +109,10 @@ instance Yesod App where
         req <- getRequest
         master <- getYesod
         mmsg <- getMessage
-        muser <- maybeAuthPair
+        musername <- maybeAuthUsername
         mcurrentRoute <- getCurrentRoute
+        sess <- getSession
+        cpprint sess
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
@@ -150,12 +152,23 @@ instance YesodAuth App where
   authenticate = authenticateCreds
   loginDest = const HomeR
   logoutDest = const HomeR
-  onLogin = pure ()
+  onLogin = maybeAuth >>= \case
+    Nothing -> cpprint ("onLogin: could not find user" :: Text)
+    Just (Entity _ uname) -> setSession userNameKey (userName uname)
+  onLogout =
+    deleteSession userNameKey
   redirectToReferer = const True
 
 instance YesodAuthPersist App
 
+ultDestKey :: Text
+ultDestKey = "_ULT"
+
+userNameKey :: Text
+userNameKey = "_UNAME"
+
 -- dbAuthPlugin
+
 
 dbAuthPluginName :: Text
 dbAuthPluginName = "db"
@@ -166,6 +179,9 @@ dbAuthPlugin = AuthPlugin dbAuthPluginName dbDispatch dbLoginHandler
     dbDispatch "POST" ["login"] = dbPostLoginR >>= sendResponse
     dbDispatch _ _ = notFound
     dbLoginHandler toParent = do
+      lookupSession ultDestKey >>= \case
+        Just dest | "logout" `isInfixOf` dest -> deleteSession ultDestKey
+        _ -> pure ()
       setTitle "Pinboard-Server | Log In"
       $(widgetFile "login")
 
@@ -206,9 +222,8 @@ isAuthenticated :: Handler AuthResult
 isAuthenticated = maybe (Unauthorized "") (const Authorized) <$> maybeAuthId
 
 maybeAuthUsername :: Handler (Maybe Text)
-maybeAuthUsername = runMaybeT $ do
-  Entity _ user <- MaybeT maybeAuth
-  pure $ userName user
+maybeAuthUsername = do
+  lookupSession userNameKey
 
 -- util
 

@@ -3,11 +3,11 @@
     <div #logo>
       <img .pin_logo src="@{StaticR images_bluepin_gif}">
         <a #pinboard_name>Pinboard-Server
-        $maybe (uid, User{..}) <- muser
+        $maybe userName <- musername
           <span>(<a class="banner_username" href="@{UserR (UserNameP userName)}">#{userName}<a>)</span>
         <!-- <div #timer>#{pageLoadTime} s -->
     <div #top_menu>
-      $maybe (uid, User{..}) <- muser
+      $maybe userName <- musername
         <a href="@{AuthR LogoutR}">
           log out
       $nothing
