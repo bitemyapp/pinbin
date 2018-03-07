@@ -1,3 +1,9 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
 #popup_header
 	{
 	  color:#aaa;
@@ -42,3 +48,7 @@ a.unread { color:#b41 }
 a.bookmark_title { font-size:120%;}
 .disabled { color:#bbb }
 
+input[type='checkbox'] {
+    margin: 0;
+    margin-bottom: 8px;
+}

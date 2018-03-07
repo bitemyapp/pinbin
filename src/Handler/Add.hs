@@ -7,54 +7,46 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
+
 module Handler.Add where
 
 import Import
--- import Database.Persist.Sql
--- import qualified Database.Esqueleto as E
+
+handleAddR :: Handler Html
+handleAddR = do
+  ((postRes, addFormW), _) <-
+    runFormPost . renderTable . addForm =<<
+    aFormToMaybeGetSuccess (addForm Nothing)
+  case postRes of
+    FormSuccess _ -> do
+      lookupGetParam "next" >>= \case
+        Just next -> redirect next
+        Nothing -> popupLayout [whamlet| Add Successful <script> window.close() |]
+    _ -> popupLayout $(widgetFile "add")
+
+-- AddForm
 
 data AddForm = AddForm
-  { next :: Maybe Text
-  , url :: Text
-  , title :: Text
-  , description :: Maybe Text
+  { url :: Text
+  , title :: Maybe Text
+  , description :: Maybe Textarea
   , tags :: Maybe Text
   , private :: Maybe Bool
   , toread :: Maybe Bool
   } deriving (Show, Eq, Read)
 
-getAddR :: Handler Html
-getAddR = do
-  ((res, widget), enctype) <- runFormGet addForm 
-  gets <- liftM reqGetParams getRequest
-  cpprint gets
-  cpprint res
-  popupLayout $ do
-    widget
-
-postAddR :: Handler Html
-postAddR = undefined
-
-addForm :: Html -> MForm Handler (FormResult AddForm, Widget)
-addForm extra = do
-  (nextR, nextV) <-
-    mopt hiddenField ((fromString "") {fsId = Just "next", fsName = Just "next"}) Nothing
-  (urlR, urlV) <-
-    mreq textField ((fromString "") {fsId = Just "url", fsName = Just "url"}) Nothing
-  (titleR, titleV) <-
-    mreq textField ((fromString "") {fsId = Just "title", fsName = Just "title"}) Nothing
-  (descriptionR, descriptionV) <-
-    mopt textareaField ((fromString "") {fsId = Just "description", fsName = Just "description"}) Nothing
-  (tagsR, tagsV) <-
-    mopt textField ((fromString "") {fsId = Just "tags", fsName = Just "tags"}) Nothing
-  (privateR, privateV) <-
-    mopt checkBoxField ((fromString "") {fsId = Just "private", fsName = Just "private"}) Nothing
-  (toreadR, toreadV) <-
-    mopt checkBoxField ((fromString "") {fsId = Just "toread", fsName = Just "toread"}) Nothing
-  let addFormR =
-        AddForm <$> nextR <*> urlR <*> titleR <*> ((fmap . fmap) unTextarea descriptionR) <*> tagsR <*> privateR <*> toreadR
-      addFormW =
-        $(widgetFile "add")
-  pure (addFormR, addFormW)
+addForm :: Maybe AddForm -> AForm Handler AddForm
+addForm defs = do
+    AddForm
+      <$> areq urlField (textAttrs $ named "url" "URL") (url <$> defs)
+      <*> aopt textField (textAttrs $ named "title" "title") (title <$> defs)
+      <*> aopt textareaField (textAreaAttrs $ named "description" "description") (description <$> defs)
+      <*> aopt textField (textAttrs $ named "tags" "tags") (tags <$> defs)
+      <*> aopt checkBoxField (named "private" "private") (private <$> defs)
+      <*> aopt checkBoxField (named "toread" "read later") (toread <$> defs)
+  where
+    textAttrs = attr ("size", "70")
+    textAreaAttrs = attrs [("cols", "70"), ("rows", "4")]
 

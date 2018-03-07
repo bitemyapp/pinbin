@@ -1,34 +1,6 @@
-<form method="post" action="@{AddR}">
-  #{extra}
+<form method="post">
   <table>
-    <tr>
-      <td>
-        URL
-      <td>
-        ^{fvInput urlV}
-    <tr>
-      <td>
-        title
-      <td> 
-        ^{fvInput titleV}
-    <tr>
-      <td>
-        description
-      <td>
-        ^{fvInput descriptionV}
-    <tr>
-      <td style="vertical-align:top">
-        tags
-      <td> 
-        ^{fvInput tagsV}
-    <tr>
-      <td>
-      <td>
-        ^{fvInput privateV}
-        <label style="display:inline" for="private">private
-        ^{fvInput toreadV}
-        <label style="display:inline" for="toread">read later
-        <br>
+    ^{addFormW}
     <tr> 
       <td>
       <td>
