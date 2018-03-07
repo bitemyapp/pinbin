@@ -39,6 +39,20 @@ $newline never
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
 
+      function pd(e) {return e.preventDefault();}
+
+      \function post(url, data) {
+      \  return fetch(url, {
+      \      body: JSON.stringify(data),
+      \      cache: 'no-cache',
+      \      credentials: 'same-origin',
+      \      headers: {'content-type': 'application/json'},
+      \      method: 'POST',
+      \      mode: 'same-origin',
+      \      redirect: 'manual'
+      \  })
+      \}
+
     $maybe analytics <- appAnalytics $ appSettings master
       <script>
         if(!window.location.href.match(/localhost/)){

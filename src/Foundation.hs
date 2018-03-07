@@ -9,7 +9,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
 module Foundation where
@@ -18,6 +17,7 @@ import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
+import PathPiece()
 
 -- import Yesod.Auth.Dummy
 
@@ -27,7 +27,6 @@ import Yesod.Auth.Message
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
-import Data.Text (splitOn)
 
 data App = App
     { appSettings    :: AppSettings
@@ -39,50 +38,8 @@ data App = App
 
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
-instance PathPiece UserNameP where
-  toPathPiece (UserNameP i) = "u:" <> i
-  fromPathPiece s =
-    case splitOn ":" s of
-      ["u", ""] -> Nothing
-      ["u", uname] -> Just $ UserNameP uname
-      _ -> Nothing
 
-instance PathPiece TagsP where
-  toPathPiece (TagsP tags) = "t:" <> (intercalate "+" tags)
-  fromPathPiece s =
-    case splitOn ":" s of
-      ["t", ""] -> Nothing
-      ["t", tags] -> Just $ TagsP (splitOn "+" tags)
-      _ -> Nothing
-
-instance PathPiece SharedP where
-  toPathPiece = \case
-    SharedAll -> ""
-    SharedPublic -> "public"
-    SharedPrivate -> "private"
-  fromPathPiece = \case
-    "public" -> Just SharedPublic
-    "private" -> Just SharedPrivate
-    _ -> Nothing
-
-instance PathPiece FilterP where
-  toPathPiece = \case
-    FilterAll -> ""
-    FilterUnread -> "unread"
-    FilterUntagged -> "untagged"
-    FilterStarred -> "starred"
-    FilterSingle bid -> "b:" <> (pack . show) bid
-  fromPathPiece = \case
-    "unread" -> Just FilterUnread
-    "untagged" -> Just FilterUntagged
-    "starred" -> Just FilterStarred
-    s -> case splitOn ":" s of
-        ["b", ""] -> Nothing
-        ["b", sbid] ->
-          case readMay sbid of
-            Just bid -> Just $ FilterSingle bid
-            _ -> Nothing
-        _ -> Nothing
+-- YesodPersist
 
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -92,6 +49,8 @@ instance YesodPersist App where
 
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
+
+-- Yesod
 
 instance Yesod App where
     approot = ApprootRequest $ \app req ->
@@ -108,11 +67,10 @@ instance Yesod App where
     defaultLayout widget = do
         req <- getRequest
         master <- getYesod
+        urlrender <- getUrlRender
         mmsg <- getMessage
         musername <- maybeAuthUsername
         mcurrentRoute <- getCurrentRoute
-        sess <- getSession
-        cpprint sess
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
@@ -141,9 +99,32 @@ instance Yesod App where
             || level == LevelError
     makeLogger = return . appLogger
 
-    authRoute _ = Just $ AuthR LoginR
-    isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized _ _ = return Authorized
+    authRoute _ = Just (AuthR LoginR)
+
+    isAuthorized (AuthR _) _ = pure Authorized
+    isAuthorized AddR _ = isAuthenticated
+    isAuthorized _ _ = pure Authorized
+
+isAuthenticated :: Handler AuthResult
+isAuthenticated = maybe AuthenticationRequired (const Authorized) <$> maybeAuthId
+
+-- popupLayout
+
+popupLayout :: Widget -> Handler Html
+popupLayout widget = do
+    req <- getRequest
+    master <- getYesod
+    mmsg <- getMessage
+    musername <- maybeAuthUsername
+    mcurrentRoute <- getCurrentRoute
+    pc <- widgetToPageContent $ do
+      addStylesheet (StaticR css_popup_css)
+      addScript (StaticR js_jquery_3_3_1_slim_min_js) 
+      addScript (StaticR js_js_cookie_2_2_0_min_js)
+      $(widgetFile "popup-layout")
+    withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+
+-- YesodAuth
 
 instance YesodAuth App where
   type AuthId App = UserId
@@ -161,6 +142,12 @@ instance YesodAuth App where
 
 instance YesodAuthPersist App
 
+-- session keys
+
+maybeAuthUsername :: Handler (Maybe Text)
+maybeAuthUsername = do
+  lookupSession userNameKey
+
 ultDestKey :: Text
 ultDestKey = "_ULT"
 
@@ -168,7 +155,6 @@ userNameKey :: Text
 userNameKey = "_UNAME"
 
 -- dbAuthPlugin
-
 
 dbAuthPluginName :: Text
 dbAuthPluginName = "db"
@@ -218,14 +204,7 @@ authenticateCreds creds =
     Nothing -> pure (UserError InvalidUsernamePass)
     Just (Entity uid _) -> pure (Authenticated uid)
 
-isAuthenticated :: Handler AuthResult
-isAuthenticated = maybe (Unauthorized "") (const Authorized) <$> maybeAuthId
-
-maybeAuthUsername :: Handler (Maybe Text)
-maybeAuthUsername = do
-  lookupSession userNameKey
-
--- util
+-- Util
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -235,3 +214,4 @@ instance HasHttpManager App where
 
 unsafeHandler :: App -> Handler a -> IO a
 unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
+

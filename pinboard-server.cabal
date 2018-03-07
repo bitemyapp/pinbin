@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d7c9fd49869fa14b8a0bbd579900dee25a6e3d34ae9cb64d86be99d5ee383c70
+-- hash: fdcb661e65358ce09eca71971793944091c27f03e64228e185d09f9e2e71b408
 
 name:           pinboard-server
 version:        0.0.0
@@ -76,6 +76,7 @@ library
   exposed-modules:
       Application
       Foundation
+      Handler.Add
       Handler.Common
       Handler.Home
       Handler.User
@@ -83,6 +84,7 @@ library
       Import.NoFoundation
       Model
       ModelCrypto
+      PathPiece
       Pretty
       Settings
       Settings.StaticFiles

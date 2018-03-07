@@ -7,9 +7,14 @@
           <span>(<a class="banner_username" href="@{UserR (UserNameP userName)}">#{userName}<a>)</span>
         <!-- <div #timer>#{pageLoadTime} s -->
     <div #top_menu>
+
       $maybe userName <- musername
-        <a href="@{AuthR LogoutR}">
-          log out
+        $maybe currentroute <- mcurrentRoute
+          <a href="@?{(AddR, [("next",urlrender currentroute)])}">add url
+
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <a onclick="pd(event);post('@{AuthR LogoutR}').then(_ => window.location.reload());" href="@{AuthR LogoutR}">
+            log out
       $nothing
         <a href="@{AuthR LoginR}">
           log in

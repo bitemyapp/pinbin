@@ -42,6 +42,7 @@ import System.Log.FastLogger
 import Handler.Common
 import Handler.Home
 import Handler.User
+import Handler.Add
 
 mkYesodDispatch "App" resourcesApp
 
