@@ -51,6 +51,7 @@ _getUser unamep@(UserNameP uname) sharedp' filterp' (TagsP pathtags) = do
        pure (cnt, bm, tg)
   mroute <- getCurrentRoute 
   let pager = $(widgetFile "pager")
+  let toTitle x = if null x then "[no title]" else x
   defaultLayout $ do
     $(widgetFile "user")
 

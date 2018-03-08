@@ -191,6 +191,7 @@ tagsQuery bmarks =
   orderBy [asc (t ^. BookmarkTagSeq)]
   pure t
 
+
 -- Bookmark Files
 
 bookmarkEntityToTags :: Entity Bookmark -> [P.Tag] -> [BookmarkTag]

@@ -8,6 +8,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
 module Handler.Add where
@@ -16,14 +17,28 @@ import Import
 
 handleAddR :: Handler Html
 handleAddR = do
-  ((postRes, addFormW), _) <-
-    runFormPost . renderTable . addForm =<<
-    aFormToMaybeGetSuccess (addForm Nothing)
-  case postRes of
-    FormSuccess _ -> do
+  ((addFormPostRes, addFormW), _) <-
+    runFormPost . renderTable . mkAddForm =<<
+    aFormToMaybeGetSuccess (mkAddForm Nothing)
+  case addFormPostRes of
+    FormSuccess (AddForm {..}) -> do
+      time <- liftIO getCurrentTime
+      userId <- requireAuthId
+      void $ runDB $ do
+        bid <- insert $
+          Bookmark userId url
+            (fromMaybe "" title)
+            (maybe "" unTextarea description)
+            time
+            (maybe True not private)
+            (fromMaybe False toread)
+            False
+        forM_ (zip [1..] (maybe [] words tags)) $ \(i, tag) ->
+          void $ insert $
+            BookmarkTag userId tag bid i
       lookupGetParam "next" >>= \case
         Just next -> redirect next
-        Nothing -> popupLayout [whamlet| Add Successful <script> window.close() |]
+        Nothing -> popupLayout [whamlet| Add Successful <script> window.close() </script> |]
     _ -> popupLayout $(widgetFile "add")
 
 -- AddForm
@@ -37,8 +52,8 @@ data AddForm = AddForm
   , toread :: Maybe Bool
   } deriving (Show, Eq, Read)
 
-addForm :: Maybe AddForm -> AForm Handler AddForm
-addForm defs = do
+mkAddForm :: Maybe AddForm -> AForm Handler AddForm
+mkAddForm defs = do
     AddForm
       <$> areq urlField (textAttrs $ named "url" "URL") (url <$> defs)
       <*> aopt textField (textAttrs $ named "title" "title") (title <$> defs)

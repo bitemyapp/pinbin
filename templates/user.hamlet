@@ -43,13 +43,13 @@
                <div .star :bookmarkSelected:.selected_star><span onclick="toggle_star(#{bk})">✭</span>
   
              <div .display>    
-               <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{bookmarkDescription}
+               <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{toTitle bookmarkDescription}
                <br>
   
                <a .url_display href="#{bookmarkHref}"> #{bookmarkHref}
                <br>
   
-               <div .description> #{bookmarkExtended}
+               <div .description> #{Textarea bookmarkExtended}
                $with btags <- filter ((==) bk' . (bookmarkTagBookmarkId . E.entityVal)) alltags
                  $forall (Entity bt BookmarkTag{..}) <- btags
                    <a .tag href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
