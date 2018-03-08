@@ -1,0 +1,23 @@
+document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+
+var csrfHeaderName = "#{rawJS $ TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName}";
+var csrfCookieName = "#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}";
+var csrfToken = Cookies.get(csrfCookieName);
+
+function pd(e) {return e.preventDefault();}
+
+function post(url, data) {
+  var headers = {'content-type': 'application/json'};
+  if(csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+  return fetch(url, {
+      body: JSON.stringify(data),
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: headers,
+      method: 'POST',
+      mode: 'same-origin',
+      redirect: 'manual'
+  })
+}

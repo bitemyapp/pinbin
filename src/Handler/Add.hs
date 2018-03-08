@@ -17,29 +17,35 @@ import Import
 
 handleAddR :: Handler Html
 handleAddR = do
+  userId <- requireAuthId
+  murl <- lookupGetParam "url"
+  mbmark <- runDB $ runMaybeT $
+    MaybeT . getBy . UniqueUserHref userId =<< (MaybeT $ pure murl)
   ((addFormPostRes, addFormW), _) <-
     runFormPost . renderTable . mkAddForm =<<
     aFormToMaybeGetSuccess (mkAddForm Nothing)
   case addFormPostRes of
     FormSuccess (AddForm {..}) -> do
       time <- liftIO getCurrentTime
-      userId <- requireAuthId
-      void $ runDB $ do
-        bid <- insert $
-          Bookmark userId url
-            (fromMaybe "" title)
-            (maybe "" unTextarea description)
-            time
-            (maybe True not private)
-            (fromMaybe False toread)
-            False
-        forM_ (zip [1..] (maybe [] words tags)) $ \(i, tag) ->
-          void $ insert $
-            BookmarkTag userId tag bid i
+      void $ runDB $
+        do bid <-
+             insert $
+             Bookmark userId url
+               (fromMaybe "" title)
+               (maybe "" unTextarea description)
+               time
+               (maybe True not private)
+               (fromMaybe False toread)
+               False
+           forM_ (zip [1 ..] (maybe [] words tags)) $
+             \(i, tag) -> void $ insert $ BookmarkTag userId tag bid i
       lookupGetParam "next" >>= \case
         Just next -> redirect next
-        Nothing -> popupLayout [whamlet| Add Successful <script> window.close() </script> |]
-    _ -> popupLayout $(widgetFile "add")
+        Nothing -> popupLayout Nothing [whamlet| Add Successful <script> window.close() </script> |]
+    _ -> popupLayout (mbmark $> $(widgetFile "add-exists-alert")) $ do
+      let focusEl =  maybe "url" (const "tags") murl :: Text
+      $(widgetFile "add")
+      
 
 -- AddForm
 

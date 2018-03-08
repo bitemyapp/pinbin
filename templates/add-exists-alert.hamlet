@@ -1,0 +1,8 @@
+$maybe Entity bid Bookmark{..} <- mbmark
+  <div .alert>
+    previously saved #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
+    <div style="display: inline; visibility: visible;">
+      <a href="#" .edit onclick="">delete</a>
+    <div style="visibility: hidden; display: none;" .delete_div>
+      <a href="#" .destroy onclick=""> destroy</a> ‧
+      <a href="#" onclick=""> cancel</a>

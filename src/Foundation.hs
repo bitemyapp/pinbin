@@ -71,6 +71,7 @@ instance Yesod App where
         mmsg <- getMessage
         musername <- maybeAuthUsername
         mcurrentRoute <- getCurrentRoute
+        void $ setCsrfCookie
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
@@ -110,17 +111,19 @@ isAuthenticated = maybe AuthenticationRequired (const Authorized) <$> maybeAuthI
 
 -- popupLayout
 
-popupLayout :: Widget -> Handler Html
-popupLayout widget = do
+popupLayout :: Maybe Widget -> Widget -> Handler Html
+popupLayout malert widget = do
     req <- getRequest
     master <- getYesod
     mmsg <- getMessage
     musername <- maybeAuthUsername
     mcurrentRoute <- getCurrentRoute
+    void $ setCsrfCookie
     pc <- widgetToPageContent $ do
       addStylesheet (StaticR css_popup_css)
       addScript (StaticR js_jquery_3_3_1_slim_min_js) 
       addScript (StaticR js_js_cookie_2_2_0_min_js)
+      toWidget $(juliusFile "templates/default-layout.julius")
       $(widgetFile "popup-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
