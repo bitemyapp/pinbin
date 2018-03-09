@@ -1,4 +1,4 @@
-$maybe Entity bid Bookmark{..} <- mbmark
+$maybe (Entity bid Bookmark{..}, tags) <- mexisting
   <div .alert>
     previously saved #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
     <div style="display: inline; visibility: visible;">

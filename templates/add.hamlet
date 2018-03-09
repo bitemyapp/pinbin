@@ -1,6 +1,6 @@
 <form method="post">
   <table>
-    ^{addFormW}
+    ^{formWidget}
     <tr> 
       <td>
       <td>

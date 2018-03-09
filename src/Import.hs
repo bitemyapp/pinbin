@@ -12,8 +12,11 @@ import Import.NoFoundation   as Import
 
 type Form f = Html -> MForm Handler (FormResult f, Widget)
 
-aFormToMaybeGetSuccess :: MonadHandler f => AForm f a -> f (Maybe a)
-aFormToMaybeGetSuccess = fmap maybeSuccess . fmap fst . runFormGet . const . fmap fst . aFormToForm
+aFormToMaybeGetSuccess
+  :: MonadHandler f
+  => AForm f a -> f (Maybe a)
+aFormToMaybeGetSuccess =
+  fmap maybeSuccess . fmap fst . runFormGet . const . fmap fst . aFormToForm
 
 maybeSuccess :: FormResult a -> Maybe a
 maybeSuccess (FormSuccess a) = Just a

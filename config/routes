@@ -11,4 +11,4 @@
 !/#UserNameP/#FilterP UserFilterR GET
 !/#UserNameP/#TagsP UserTagsR GET
 
-/add AddR
+/add AddR GET POST

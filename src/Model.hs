@@ -34,7 +34,7 @@ import qualified Database.Esqueleto as E
 
 -- Physical model
 
-share [mkPersist sqlSettings, mkMigrate "migrateSchema"] [persistLowerCase| 
+share [mkPersist sqlSettings, mkDeleteCascade sqlSettings, mkMigrate "migrateSchema"] [persistLowerCase| 
 User
   name Text
   passwordHash BCrypt
@@ -191,6 +191,8 @@ tagsQuery bmarks =
   orderBy [asc (t ^. BookmarkTagSeq)]
   pure t
 
+withTags :: Key Bookmark -> DB [Entity BookmarkTag]
+withTags key = selectList [BookmarkTagBookmarkId ==. key] [Asc BookmarkTagSeq]
 
 -- Bookmark Files
 
