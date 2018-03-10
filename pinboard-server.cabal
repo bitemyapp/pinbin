@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fdcb661e65358ce09eca71971793944091c27f03e64228e185d09f9e2e71b408
+-- hash: 4cb14bee845b5d446b6f60aba62d4975521160a866199ba95e0b7a88a89a94f7
 
 name:           pinboard-server
 version:        0.0.0
@@ -22,6 +22,7 @@ flag library-only
 library
   hs-source-dirs:
       src
+  default-extensions: BangPatterns CPP ConstraintKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
   build-depends:
       aeson >=0.6 && <1.3
     , base >=4.8.2.0 && <4.9 || >=4.9.1.0 && <5
@@ -78,6 +79,7 @@ library
       Foundation
       Handler.Add
       Handler.Common
+      Handler.Delete
       Handler.Home
       Handler.User
       Import
@@ -97,6 +99,7 @@ executable migration
   main-is: Main.hs
   hs-source-dirs:
       app/migration
+  default-extensions: BangPatterns CPP ConstraintKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson >=0.6 && <1.3
@@ -156,6 +159,7 @@ executable pinboard-server
   main-is: main.hs
   hs-source-dirs:
       app
+  default-extensions: BangPatterns CPP ConstraintKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson >=0.6 && <1.3
@@ -216,6 +220,7 @@ test-suite test
   main-is: Spec.hs
   hs-source-dirs:
       test
+  default-extensions: BangPatterns CPP ConstraintKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving InstanceSigs LambdaCase MultiParamTypeClasses NoImplicitPrelude OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
   ghc-options: -Wall
   build-depends:
       aeson >=0.6 && <1.3

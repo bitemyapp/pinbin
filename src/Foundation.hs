@@ -1,14 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
 module Foundation where

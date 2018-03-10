@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module ModelCrypto where
 

@@ -1,6 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Pretty where
   
 import Text.Show.Pretty (ppShow)

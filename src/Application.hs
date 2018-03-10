@@ -1,10 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Application
@@ -43,6 +36,7 @@ import Handler.Common
 import Handler.Home
 import Handler.User
 import Handler.Add
+import Handler.Delete
 
 mkYesodDispatch "App" resourcesApp
 

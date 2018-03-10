@@ -1,19 +1,3 @@
-{-# LANGUAGE EmptyDataDecls             #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NoImplicitPrelude          #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE DeriveDataTypeable         #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE LambdaCase                 #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Model where

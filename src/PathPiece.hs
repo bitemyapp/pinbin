@@ -1,6 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module PathPiece where

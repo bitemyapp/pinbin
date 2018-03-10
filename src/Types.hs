@@ -1,9 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
-
 module Types where
 
 import ClassyPrelude.Yesod

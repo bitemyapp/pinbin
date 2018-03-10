@@ -1,6 +1,32 @@
 name:    pinboard-server
 version: "0.0.0"
 
+default-extensions:
+- BangPatterns
+- CPP
+- ConstraintKinds
+- DeriveDataTypeable
+- DeriveGeneric
+- EmptyDataDecls
+- FlexibleContexts
+- FlexibleInstances
+- GADTs
+- GeneralizedNewtypeDeriving
+- InstanceSigs
+- LambdaCase
+- MultiParamTypeClasses
+- NoImplicitPrelude
+- OverloadedStrings
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- TemplateHaskell
+- TupleSections
+- TypeFamilies
+- TypeOperators
+- ViewPatterns
+
 dependencies:
 
 # Due to a bug in GHC 8.0.1, we block its usage
