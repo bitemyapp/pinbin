@@ -53,6 +53,7 @@ _getUser unamep@(UserNameP uname) sharedp' filterp' (TagsP pathtags) = do
   let pager = $(widgetFile "pager")
   let toTitle x = if null x then "[no title]" else x
   defaultLayout $ do
+    $(widgetFile "bmark")
     $(widgetFile "user")
 
 _lookupPagingParams :: Handler (Maybe Int64, Maybe Int64)

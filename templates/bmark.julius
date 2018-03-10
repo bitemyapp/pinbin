@@ -1,0 +1,18 @@
+var bmark = {
+    delete_remove: function (e, id) {
+        app.pd(e);
+        this._delete(id, () => e.target.closest('.bookmark').remove(), console.log);
+    },
+    _delete: function (id, onSuccess, onError) {
+        app.post_urlenc('edit/' + id, { action: 'delete' })
+            .then(data => {
+                if (data.ok) {
+                    onSuccess();
+                } else {
+                    onError();
+                }
+            })
+            .catch(onError)
+    }
+
+};

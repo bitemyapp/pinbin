@@ -51,7 +51,7 @@ instance Yesod App where
         10080 -- min (7 days)
         "config/client_session_key.aes"
 
-    yesodMiddleware = defaultYesodMiddleware
+    yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware
 
     defaultLayout widget = do
         req <- getRequest
@@ -61,7 +61,6 @@ instance Yesod App where
         mmsg <- getMessage
         musername <- maybeAuthUsername
         mcurrentRoute <- getCurrentRoute
-        void $ setCsrfCookie
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
             addStylesheet (StaticR css_main_css)
@@ -110,7 +109,6 @@ popupLayout malert widget = do
     mmsg <- getMessage
     musername <- maybeAuthUsername
     mcurrentRoute <- getCurrentRoute
-    void $ setCsrfCookie
     pc <- widgetToPageContent $ do
       addStylesheet (StaticR css_popup_css)
       addScript (StaticR js_jquery_3_3_1_slim_min_js) 
