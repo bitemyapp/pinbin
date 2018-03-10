@@ -36,7 +36,7 @@ import Handler.Common
 import Handler.Home
 import Handler.User
 import Handler.Add
-import Handler.Delete
+import Handler.Edit
 
 mkYesodDispatch "App" resourcesApp
 

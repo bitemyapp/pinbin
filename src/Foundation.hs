@@ -56,6 +56,7 @@ instance Yesod App where
     defaultLayout widget = do
         req <- getRequest
         master <- getYesod
+        let root = getApprootText approot master (reqWaiRequest req)
         urlrender <- getUrlRender
         mmsg <- getMessage
         musername <- maybeAuthUsername
@@ -92,8 +93,8 @@ instance Yesod App where
     authRoute _ = Just (AuthR LoginR)
 
     isAuthorized (AuthR _) _ = pure Authorized
+    isAuthorized (EditR _) _ = isAuthenticated
     isAuthorized AddR _ = isAuthenticated
-    isAuthorized (DeleteR _) _ = isAuthenticated
     isAuthorized _ _ = pure Authorized
 
 isAuthenticated :: Handler AuthResult
@@ -105,6 +106,7 @@ popupLayout :: Maybe Widget -> Widget -> Handler Html
 popupLayout malert widget = do
     req <- getRequest
     master <- getYesod
+    let root = getApprootText approot master (reqWaiRequest req)
     mmsg <- getMessage
     musername <- maybeAuthUsername
     mcurrentRoute <- getCurrentRoute

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4f09ef16912dd900e80318b71238c3b0089273742505fc1777b813d8260a26f1
+-- hash: 4b85f9d1a8078f016750ef4652c11011b868605d49af23cac6566c9625b6f3db
 
 name:           pinboard-server
 version:        0.0.0
@@ -79,7 +79,7 @@ library
       Foundation
       Handler.Add
       Handler.Common
-      Handler.Delete
+      Handler.Edit
       Handler.Home
       Handler.User
       Import

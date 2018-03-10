@@ -1,23 +1,46 @@
 document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
 
-var csrfHeaderName = "#{rawJS $ TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName}";
-var csrfCookieName = "#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}";
-var csrfToken = Cookies.get(csrfCookieName);
+var app = {
+    csrfHeaderName: "#{rawJS $ TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName}",
+    csrfCookieName: "#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}",
+    csrfToken: Cookies.get("#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}"),
 
-function pd(e) {return e.preventDefault();}
+    root: "#{rawJS root}/",
 
-function post(url, data) {
-  var headers = {'content-type': 'application/json'};
-  if(csrfToken) {
-    headers[csrfHeaderName] = csrfToken;
-  }
-  return fetch(url, {
-      body: JSON.stringify(data),
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: headers,
-      method: 'POST',
-      mode: 'same-origin',
-      redirect: 'manual'
-  })
+    pd: function (e) {return e.preventDefault();},
+
+    serialize: function(obj) {
+      var str = [];
+      for (var p in obj)
+        if (obj.hasOwnProperty(p)) {
+          str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+      return str.join("&");
+    },
+
+    post_urlenc: function (path, data) {
+        var headers = {'content-type': 'application/x-www-form-urlencoded'};
+        return app._post(path, headers, app.serialize(data));
+    },
+
+    post_json: function (path, data) {
+        var headers = {'content-type': 'application/json'};
+        return app._post(path, headers, JSON.stringify(data));
+    },
+
+    _post: function (path, headers, body) {
+        headers = headers || {};
+        if(app.csrfToken) {
+            headers[app.csrfHeaderName] = app.csrfToken;
+        }
+        return fetch(app.root + path, {
+            body: body,
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: headers,
+            method: 'POST',
+            mode: 'same-origin',
+            redirect: 'manual'
+        })
+    }
 }

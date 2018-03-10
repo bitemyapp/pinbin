@@ -3,6 +3,7 @@
 module Handler.Add where
 
 import Import
+import Data.List (nub)
 
 getAddR :: Handler Html
 getAddR = do
@@ -46,7 +47,7 @@ postAddR = do
       time <- liftIO getCurrentTime
       void $ runDB $ upsertDB
         (toBookmark userId time addForm)
-        (maybe [] words (tags addForm))
+        (maybe [] (nub . words) (tags addForm))
       lookupGetParam "next" >>= \case
         Just next -> redirect next
         Nothing -> popupLayout Nothing [whamlet| <div .alert> Add Successful </div> <script> window.close() </script> |]

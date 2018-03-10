@@ -1,0 +1,8 @@
+var user = {
+    delete_bmark: function(e, id) {
+        app.pd(e);
+        app.post_urlenc('edit/' + id, {action: 'delete'})
+          // .then(data => console.log(data))
+          // .catch(err => console.error(err))
+    }
+}

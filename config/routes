@@ -12,4 +12,5 @@
 !/#UserNameP/#TagsP UserTagsR GET
 
 /add AddR GET POST
-/delete/#Int64 DeleteR POST
+
+/edit/#Int64 EditR POST
