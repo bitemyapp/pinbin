@@ -1,13 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
 module Main where

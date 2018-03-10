@@ -93,6 +93,7 @@ instance Yesod App where
 
     isAuthorized (AuthR _) _ = pure Authorized
     isAuthorized AddR _ = isAuthenticated
+    isAuthorized (DeleteR _) _ = isAuthenticated
     isAuthorized _ _ = pure Authorized
 
 isAuthenticated :: Handler AuthResult

@@ -21,6 +21,7 @@ default-extensions:
 - RankNTypes
 - RecordWildCards
 - ScopedTypeVariables
+- StandaloneDeriving
 - TemplateHaskell
 - TupleSections
 - TypeFamilies
