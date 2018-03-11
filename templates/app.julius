@@ -4,7 +4,7 @@ var app = {
     csrfCookieName: "#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}",
     csrfToken: Cookies.get("#{rawJS $ TE.decodeUtf8 defaultCsrfCookieName}"),
 
-    root: "#{rawJS root}/",
+    root: "@{HomeR}",
 
     pd: function (e) {return e.preventDefault();},
 

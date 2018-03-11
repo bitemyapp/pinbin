@@ -56,17 +56,14 @@ instance Yesod App where
     defaultLayout widget = do
         req <- getRequest
         master <- getYesod
-        let root = getApprootText approot master (reqWaiRequest req)
         urlrender <- getUrlRender
         mmsg <- getMessage
         musername <- maybeAuthUsername
         mcurrentRoute <- getCurrentRoute
         pc <- widgetToPageContent $ do
             setTitle "Pinboard-Server"
+            addAppScripts
             addStylesheet (StaticR css_main_css)
-            addScript (StaticR js_jquery_3_3_1_slim_min_js) 
-            addScript (StaticR js_js_cookie_2_2_0_min_js)
-            toWidget $(juliusFile "templates/app.julius")
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -98,21 +95,25 @@ instance Yesod App where
 isAuthenticated :: Handler AuthResult
 isAuthenticated = maybe AuthenticationRequired (const Authorized) <$> maybeAuthId
 
+addAppScripts :: (MonadWidget m, HandlerSite m ~ App) => m ()
+addAppScripts = do
+  ddScript (StaticR js_jquery_3_3_1_slim_min_js) 
+  addScript (StaticR js_js_cookie_2_2_0_min_js)
+  toWidget $(juliusFile "templates/app.julius")
+
+
 -- popupLayout
 
 popupLayout :: Maybe Widget -> Widget -> Handler Html
 popupLayout malert widget = do
     req <- getRequest
     master <- getYesod
-    let root = getApprootText approot master (reqWaiRequest req)
     mmsg <- getMessage
     musername <- maybeAuthUsername
     mcurrentRoute <- getCurrentRoute
     pc <- widgetToPageContent $ do
+      addAppScripts
       addStylesheet (StaticR css_popup_css)
-      addScript (StaticR js_jquery_3_3_1_slim_min_js) 
-      addScript (StaticR js_js_cookie_2_2_0_min_js)
-      toWidget $(juliusFile "templates/app.julius")
       $(widgetFile "popup-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
