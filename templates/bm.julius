@@ -30,7 +30,6 @@ var bm = {
                     onError();
                 }
             })
-            .catch(onError)
     },
 
     mark_read: function (e, id) {
@@ -46,4 +45,23 @@ var bm = {
                 }
             })
     },
+
+    toggle_star: function (e, id) {
+        app.pd(e);
+        var $el = $(e.target);
+        var $star = $el.closest('.star');
+        var action = $star.hasClass('selected_star') ? "unstar" : "star";
+        app.fetch_urlenc('POST', 'bm/' + id + '/' + action)
+            .then(data => {
+                if (data.ok) {
+                    if(action =='star') {
+                        $star.addClass('selected_star');
+                    } else {
+                        $star.removeClass('selected_star');
+                    }
+                } else {
+                    console.log(data);
+                }
+            })
+    }
 };

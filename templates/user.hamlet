@@ -40,7 +40,7 @@
           <div ##{bk} .bookmark :not bookmarkShared:.private data-bk=#{bk}>
   
             $if isowner
-              <div .star :bookmarkSelected:.selected_star><span onclick="bm.toggle_star(#{bk})">✭</span>
+              <div .star :bookmarkSelected:.selected_star><span onclick="bm.toggle_star(event, #{bk})">✭</span>
   
             <div .display>    
               <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{toTitle bookmarkDescription}
@@ -52,7 +52,9 @@
               <div .description> #{Textarea bookmarkExtended}
               $with btags <- filter ((==) bk' . (bookmarkTagBookmarkId . E.entityVal)) alltags
                 $forall (Entity bt BookmarkTag{..}) <- btags
-                  <a .tag href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
+                  $with private <- isPrefixOf "." bookmarkTagTag
+                    $if (private && isowner) || (not private)
+                      <a .tag :private:.private href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
               <br>
   
               <a .when href="@{UserFilterR unamep (FilterSingle bk)}" title="">
