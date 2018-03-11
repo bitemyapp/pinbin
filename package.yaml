@@ -15,6 +15,7 @@ default-extensions:
 - InstanceSigs
 - LambdaCase
 - MultiParamTypeClasses
+- MultiWayIf
 - NoImplicitPrelude
 - OverloadedStrings
 - QuasiQuotes

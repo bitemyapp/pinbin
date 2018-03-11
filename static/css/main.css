@@ -101,7 +101,6 @@ a.fetch_err
 .confirm 
 { 
     color:red;
-    visibility:hidden;
     display:none; 
 }
 .delete_link { display:inline; }
@@ -368,7 +367,6 @@ a.next_prev { color:#777 }
   float:left;
   color:#888;
   display:none;
-  visibility:hidden;
 }
 
 #edit_bookmark_form p

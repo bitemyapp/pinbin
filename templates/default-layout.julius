@@ -1,4 +1,3 @@
-document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
 
 var app = {
     csrfHeaderName: "#{rawJS $ TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName}",
@@ -18,29 +17,31 @@ var app = {
       return str.join("&");
     },
 
-    post_urlenc: function (path, data) {
+    fetch_urlenc: function (method, path, data) {
         var headers = {'content-type': 'application/x-www-form-urlencoded'};
-        return app._post(path, headers, app.serialize(data));
+        return app._fetch(method, path, headers, app.serialize(data));
     },
 
-    post_json: function (path, data) {
+    fetch_json: function (method, path, data) {
         var headers = {'content-type': 'application/json'};
-        return app._post(path, headers, JSON.stringify(data));
+        return app._fetch(method, path, headers, JSON.stringify(data));
     },
 
-    _post: function (path, headers, body) {
+    _fetch: function (method, path, headers, body) {
         headers = headers || {};
         if(app.csrfToken) {
             headers[app.csrfHeaderName] = app.csrfToken;
         }
         return fetch(app.root + path, {
+            method: method,
+            headers: headers,
             body: body,
             cache: 'no-cache',
             credentials: 'same-origin',
-            headers: headers,
-            method: 'POST',
             mode: 'same-origin',
             redirect: 'manual'
         })
     }
 }
+
+document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');

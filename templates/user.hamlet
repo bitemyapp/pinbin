@@ -40,7 +40,7 @@
            <div ##{bk} .bookmark :not bookmarkShared:.private data-bk='#{bk}'>
   
              $if isowner
-               <div .star :bookmarkSelected:.selected_star><span onclick="bmark.toggle_star(#{bk})">✭</span>
+               <div .star :bookmarkSelected:.selected_star><span onclick="bm.toggle_star(#{bk})">✭</span>
   
              <div .display>    
                <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{toTitle bookmarkDescription}
@@ -61,12 +61,12 @@
                $if isowner
                  <div .edit_links style="display:inline">
                     &nbsp;&nbsp;
-                    <a .edit onclick="bmark.edit();return false;" href="#"> edit&nbsp;&nbsp;
+                    <a .edit onclick="bm.edit();" href="#"> edit&nbsp;&nbsp;
                     <div .delete_link>
-                      <a .delete onclick="bmark.delete_remove(event, #{bk});return false" href="#" style="display: inline; visibility: visible;"> delete
-                      <span .confirm style="display: none; visibility: hidden;">
-                        <a href="#" onclick="bmark.cancel();return false"> cancel /
-                        <a .destroy href="#" onclick="bmark.destroy_bmark();return false"> destroy
+                      <a .delete onclick="bm.delete_ask(event);" href="#" style="display: inline;"> delete
+                      <span .confirm style="display: none;">
+                        <a href="#" onclick="bm.delete_cancel(event)"> cancel /
+                        <a .destroy href="#" onclick="bm.destroy(event, #{bk});"> destroy
   
              <div style="clear:both">
   

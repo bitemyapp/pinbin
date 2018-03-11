@@ -78,7 +78,9 @@ postAddR = do
 -- add widget
 
 viewAddWidget :: Widget -> Maybe Widget -> Text -> Handler Html
-viewAddWidget formWidget malert focusEl = popupLayout malert $(widgetFile "add")
+viewAddWidget formWidget mexists focusEl = do
+  let submitText = (maybe "add bookmark" (const "update bookmark") mexists) :: Text
+  popupLayout mexists $(widgetFile "add")
 
 -- AddForm
 
@@ -89,9 +91,9 @@ data AddForm = AddForm
   , tags :: Maybe Text
   , private :: Maybe Bool
   , toread :: Maybe Bool
-  } deriving (Show, Eq, Read)
+  } deriving (Show, Eq, Read, Generic)
 
-mkAddAForm :: Maybe AddForm -> AForm Handler AddForm
+mkAddAForm :: MonadHandlerForm m => Maybe AddForm -> AForm m AddForm
 mkAddAForm defs = do
     AddForm
       <$> areq urlField (textAttrs $ named "url" "URL") (url <$> defs)

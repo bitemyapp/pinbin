@@ -8,20 +8,41 @@ module Import
 import Foundation            as Import
 import Import.NoFoundation   as Import
 
+import qualified Data.ByteString.Char8 as B8
+import qualified Data.Aeson as A
+
 -- Forms
 
 type MonadHandlerForm m = (RenderMessage App FormMessage, HandlerSite m ~ App, MonadHandler m)
 
 type Form f = Html -> MForm Handler (FormResult f, Widget)
 
+runInputPostJSONResult
+  :: (FromJSON a, MonadHandlerForm m)
+  => FormInput m a -> m (FormResult a)
+runInputPostJSONResult form = do
+  mct <- lookupHeader "content-type"
+  case fmap (B8.takeWhile (/= ';')) mct of
+    Just "application/json" ->
+      parseJsonBody >>= \case
+        A.Success a -> pure $ FormSuccess a
+        A.Error e -> pure $ FormFailure [pack e]
+    Just "application/x-www-form-urlencoded" ->
+      runInputPostResult form
+    _ -> pure FormMissing
 
-runPost
-  :: (MkAForm a, FromJSON a, MonadHandlerForm m)
-  => m (Maybe a)
-runPost = aFormToMaybePostSuccess mkAForm
+runInputPostJSON
+  :: (FromJSON a, MonadHandlerForm m)
+  => FormInput m a -> m a
+runInputPostJSON form =
+  runInputPostJSONResult form >>=
+  \case
+    FormSuccess a -> pure a
+    FormFailure e -> invalidArgs e
+    FormMissing -> invalidArgs []
 
-class MkAForm a where
-  mkAForm :: MonadHandlerForm m => AForm m a
+class MkIForm a where
+  mkIForm :: MonadHandlerForm m => FormInput m a
 
 aFormToMaybeGetSuccess
   :: MonadHandler f

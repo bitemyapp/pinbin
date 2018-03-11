@@ -1,0 +1,31 @@
+var bm = {
+    delete_ask: function (e, id) {
+      var $el = $(e.target)
+      $el.closest('.delete_link')
+        .find('.confirm').show().end()
+        .find('.delete').hide();
+    },
+    delete_cancel: function (e, id) {
+      var $el = $(e.target)
+      $el.closest('.delete_link')
+        .find('.confirm').hide().end()
+        .find('.delete').show();
+    },
+    destroy: function (e, id) {
+        app.pd(e);
+        this._destroy(id, () => 
+          $(e.target).closest('.bookmark').remove(), 
+          console.log);
+    },
+    _destroy: function (id, onSuccess, onError) {
+        app.fetch_urlenc('DELETE', 'edit/' + id, { action: 'delete' })
+            .then(data => {
+                if (data.ok) {
+                    onSuccess();
+                } else {
+                    onError();
+                }
+            })
+            .catch(onError)
+    }
+};
