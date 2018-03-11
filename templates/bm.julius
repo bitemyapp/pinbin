@@ -1,4 +1,4 @@
-var bm = {
+app.bm = {
     delete_ask: function (e, id) {
         app.pd(e);
         var $el = $(e.target)

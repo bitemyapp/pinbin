@@ -66,6 +66,7 @@ instance Yesod App where
             addStylesheet (StaticR css_main_css)
             addScript (StaticR js_jquery_3_3_1_slim_min_js) 
             addScript (StaticR js_js_cookie_2_2_0_min_js)
+            toWidget $(juliusFile "templates/app.julius")
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -111,7 +112,7 @@ popupLayout malert widget = do
       addStylesheet (StaticR css_popup_css)
       addScript (StaticR js_jquery_3_3_1_slim_min_js) 
       addScript (StaticR js_js_cookie_2_2_0_min_js)
-      toWidget $(juliusFile "templates/default-layout.julius")
+      toWidget $(juliusFile "templates/app.julius")
       $(widgetFile "popup-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
