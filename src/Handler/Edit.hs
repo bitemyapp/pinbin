@@ -6,13 +6,22 @@ import Database.Persist.Sql
 
 import Import
 
-deleteEditR :: Int64 -> Handler Html
-deleteEditR bid = do
+deleteDeleteR :: Int64 -> Handler Html
+deleteDeleteR bid = do
   userId <- requireAuthId
   runDB $ do
     let k_bid = toSqlKey bid
     void $ requireResource userId k_bid
     deleteCascade k_bid
+  pure ""
+
+postReadR :: Int64 -> Handler Html
+postReadR bid = do
+  userId <- requireAuthId
+  runDB $ do
+    let k_bid = toSqlKey bid
+    bm <- requireResource userId k_bid
+    update k_bid [BookmarkToRead =. False]
   pure ""
 
 -- common

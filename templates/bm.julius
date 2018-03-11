@@ -1,24 +1,28 @@
 var bm = {
     delete_ask: function (e, id) {
-      var $el = $(e.target)
-      $el.closest('.delete_link')
-        .find('.confirm').show().end()
-        .find('.delete').hide();
+        app.pd(e);
+        var $el = $(e.target)
+        this._toggle_delete($el, true);
     },
     delete_cancel: function (e, id) {
-      var $el = $(e.target)
-      $el.closest('.delete_link')
-        .find('.confirm').hide().end()
-        .find('.delete').show();
+        app.pd(e);
+        var $el = $(e.target)
+        this._toggle_delete($el, false);
     },
     destroy: function (e, id) {
         app.pd(e);
-        this._destroy(id, () => 
-          $(e.target).closest('.bookmark').remove(), 
-          console.log);
+        this._destroy(id, () =>
+            $(e.target).closest('.bookmark').remove(),
+            console.log);
+    },
+    _toggle_delete($el, active) {
+        $el.closest('.delete_link')
+            .find('.confirm').toggle(active).end()
+            .find('.delete').toggle(!active);
+
     },
     _destroy: function (id, onSuccess, onError) {
-        app.fetch_urlenc('DELETE', 'edit/' + id, { action: 'delete' })
+        app.fetch_urlenc('DELETE', 'bm/' + id)
             .then(data => {
                 if (data.ok) {
                     onSuccess();
@@ -27,5 +31,19 @@ var bm = {
                 }
             })
             .catch(onError)
-    }
+    },
+
+    mark_read: function (e, id) {
+        app.pd(e);
+        app.fetch_urlenc('POST', 'bm/' + id + '/read')
+            .then(data => {
+                if (data.ok) {
+                    $(e.target)
+                      .closest('.bookmark').find('.bookmark_title').removeClass('unread').end().end()
+                      .closest('.read').remove();
+                } else {
+                    console.log(data);
+                }
+            })
+    },
 };

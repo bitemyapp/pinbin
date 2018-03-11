@@ -13,4 +13,5 @@
 
 /add AddR GET POST
 
-/edit/#Int64 EditR DELETE
+/bm/#Int64 DeleteR DELETE
+/bm/#Int64/read ReadR POST

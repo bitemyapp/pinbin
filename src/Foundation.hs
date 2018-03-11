@@ -92,8 +92,6 @@ instance Yesod App where
     authRoute _ = Just (AuthR LoginR)
 
     isAuthorized (AuthR _) _ = pure Authorized
-    isAuthorized (EditR _) _ = isAuthenticated
-    isAuthorized AddR _ = isAuthenticated
     isAuthorized _ _ = pure Authorized
 
 isAuthenticated :: Handler AuthResult

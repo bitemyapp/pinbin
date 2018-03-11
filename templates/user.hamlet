@@ -33,42 +33,47 @@
     $forall (Entity bk' Bookmark{..}) <- bmarks
       $with bk <- fromSqlKey bk'
         <div>
-           $if isowner
-             <div .edit_checkbox name="edit_checkbox">
-               <input #checkbox_#{bk} autocomplete="off" type="checkbox">
+          $if isowner
+            <div .edit_checkbox name="edit_checkbox">
+              <input #checkbox_#{bk} autocomplete="off" type="checkbox">
   
-           <div ##{bk} .bookmark :not bookmarkShared:.private data-bk='#{bk}'>
+          <div ##{bk} .bookmark :not bookmarkShared:.private data-bk=#{bk}>
   
-             $if isowner
-               <div .star :bookmarkSelected:.selected_star><span onclick="bm.toggle_star(#{bk})">✭</span>
+            $if isowner
+              <div .star :bookmarkSelected:.selected_star><span onclick="bm.toggle_star(#{bk})">✭</span>
   
-             <div .display>    
-               <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{toTitle bookmarkDescription}
-               <br>
+            <div .display>    
+              <a .bookmark_title :bookmarkToRead:.unread target="_blank" href="#{bookmarkHref}"> #{toTitle bookmarkDescription}
+              <br>
   
-               <a .url_display href="#{bookmarkHref}"> #{bookmarkHref}
-               <br>
+              <a .url_display href="#{bookmarkHref}"> #{bookmarkHref}
+              <br>
   
-               <div .description> #{Textarea bookmarkExtended}
-               $with btags <- filter ((==) bk' . (bookmarkTagBookmarkId . E.entityVal)) alltags
-                 $forall (Entity bt BookmarkTag{..}) <- btags
-                   <a .tag href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
-               <br>
+              <div .description> #{Textarea bookmarkExtended}
+              $with btags <- filter ((==) bk' . (bookmarkTagBookmarkId . E.entityVal)) alltags
+                $forall (Entity bt BookmarkTag{..}) <- btags
+                  <a .tag href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>&nbsp; 
+              <br>
   
-               <a .when href="@{UserFilterR unamep (FilterSingle bk)}" title="">
-                 #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
-                 
-               $if isowner
-                 <div .edit_links style="display:inline">
-                    &nbsp;&nbsp;
-                    <a .edit onclick="bm.edit();" href="#"> edit&nbsp;&nbsp;
-                    <div .delete_link>
-                      <a .delete onclick="bm.delete_ask(event);" href="#" style="display: inline;"> delete
-                      <span .confirm style="display: none;">
-                        <a href="#" onclick="bm.delete_cancel(event)"> cancel /
-                        <a .destroy href="#" onclick="bm.destroy(event, #{bk});"> destroy
+              <a .when href="@{UserFilterR unamep (FilterSingle bk)}" title="">
+                #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
+                
+              $if isowner
+                <div .edit_links style="display:inline">
+                  &nbsp;&nbsp;
+                  <a .edit onclick="bm.edit();" href="#"> edit&nbsp;&nbsp;
+                  <div .delete_link>
+                    <a .delete onclick="bm.delete_ask(event);" href="#" style="display: inline;"> delete
+                    <span .confirm style="display: none;">
+                      <a href="#" onclick="bm.delete_cancel(event)"> cancel /
+                      <a .destroy href="#" onclick="bm.destroy(event, #{bk});"> destroy
+
+              $if bookmarkToRead
+                <div .read style="display:inline">
+                  &nbsp;&nbsp;
+                  <a .mark_read href="#" onclick="bm.mark_read(event, #{bk});">mark as read</a>
   
-             <div style="clear:both">
+            <div style="clear:both">
   
            <div style="clear:both">
 
