@@ -16,6 +16,12 @@ var app = {
         }
       return str.join("&");
     },
+    
+    logout: function (e) {
+        app.pd(e);
+        app._fetch_url('POST', '@{AuthR LogoutR}')
+            .then(() => window.location.reload());
+    },
 
     fetch_urlenc: function (method, path, data) {
         var headers = {'content-type': 'application/x-www-form-urlencoded'};
@@ -28,19 +34,26 @@ var app = {
     },
 
     _fetch: function (method, path, headers, body) {
+        var url = app.root + path;
+        return app._fetch_url(method, url, headers, body)
+    },
+    _fetch_url: function (method, url, headers, body) {
         headers = headers || {};
         if(app.csrfToken) {
             headers[app.csrfHeaderName] = app.csrfToken;
         }
-        return fetch(app.root + path, {
+        var opts = {
             method: method,
             headers: headers,
-            body: body,
             cache: 'no-cache',
             credentials: 'same-origin',
             mode: 'same-origin',
             redirect: 'manual'
-        })
+        }
+        if(!!body) {
+            opts.body = body
+        }
+        return fetch(url, opts)
     }
 }
 

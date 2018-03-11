@@ -156,6 +156,7 @@ dbAuthPlugin = AuthPlugin dbAuthPluginName dbDispatch dbLoginHandler
     dbDispatch "POST" ["login"] = dbPostLoginR >>= sendResponse
     dbDispatch _ _ = notFound
     dbLoginHandler toParent = do
+      req <- getRequest
       lookupSession ultDestKey >>= \case
         Just dest | "logout" `isInfixOf` dest -> deleteSession ultDestKey
         _ -> pure ()

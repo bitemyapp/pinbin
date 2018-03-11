@@ -13,7 +13,7 @@
           <a href="@?{(AddR, [("next",urlrender currentroute)])}">add url
 
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <a onclick="pd(event);post('@{AuthR LogoutR}').then(_ => window.location.reload());" href="@{AuthR LogoutR}">
+          <a onclick="app.logout(event);" href="@{AuthR LogoutR}">
             log out
       $nothing
         <a href="@{AuthR LoginR}">

@@ -1,5 +1,7 @@
 <div #login style="text-align:left; margin-top:30px;">
   <form method="post" action="@{toParent dbLoginR}">
+    $maybe token <- reqToken req
+      <input type="hidden" name="#{defaultCsrfParamName}" value="#{token}">
     <table width="380" border="0">
       <tbody>
         <tr>
