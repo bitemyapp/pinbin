@@ -112,6 +112,11 @@ a.tag {color:#a51;line-height:190%;}
 a.bundle { color:#b40;font-weight:bold }
 a.bundle { color:#a21;font-weight:bold }
 
+.tags { display: inline; }
+.tags a.tag {
+    margin-right: 5px;
+}
+
 #bundle_names a
 {
     line-height:180%;
@@ -357,7 +362,7 @@ a.next_prev { color:#777 }
 /* bulk and single edit form */
 #bulk_links p { line-height:0.7em; }
 
-#edit_bookmark_form
+.edit_bookmark_form
 {
   border: 0px solid #aaa;
   background:#fff;
@@ -369,21 +374,21 @@ a.next_prev { color:#777 }
   display:none;
 }
 
-#edit_bookmark_form p
+.edit_bookmark_form p
 {
   line-height:100%;
   margin-bottom:0px;
   color:#888;
 }
 
-#edit_bookmark_form input
+.edit_bookmark_form input
 {
   font-size:90%;
   border:1px solid #ddd;
   margin-bottom:3px;
 }
 
-#edit_bookmark_form textarea
+.edit_bookmark_form textarea
 {
   font-size:90%;
   border:1px solid #ddd;
@@ -409,6 +414,11 @@ a.next_prev { color:#777 }
     margin-bottom:18px;
 }
 
+.edit_bookmark_form .edit-button
+{
+    background-color: #eee;
+    cursor: pointer;
+}
 
 #tag_cloud
 {

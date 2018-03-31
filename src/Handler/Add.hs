@@ -27,7 +27,7 @@ getAddR = do
     (maybe "url" (const "tags") murl :: Text)
   where
     toAddDefs :: (Entity Bookmark, [Entity BookmarkTag]) -> AddForm
-    toAddDefs (Entity _ Bookmark {..}, tags) =
+    toAddDefs (Entity bid Bookmark {..}, tags) =
       AddForm
       { url = bookmarkHref
       , title = Just bookmarkDescription
@@ -35,6 +35,7 @@ getAddR = do
       , tags = Just $ unwords $ fmap (bookmarkTagTag . entityVal) tags
       , private = Just $ not bookmarkShared
       , toread = Just $ bookmarkToRead
+      , bid = Nothing
       }
 
 postAddR :: Handler Html
@@ -46,14 +47,17 @@ postAddR = do
   case formResult of
     FormSuccess addForm -> do
       time <- liftIO getCurrentTime
-      void $ runDB $ upsertDB
+      newBid <- runDB $ upsertDB
+        (toSqlKey <$> bid addForm)
         (toBookmark userId time addForm)
         (maybe [] (nub . words) (tags addForm))
       lookupGetParam "next" >>= \case
         Just next -> redirect next
         Nothing -> popupLayout Nothing [whamlet| <div .alert> Add Successful </div> <script> window.close() </script> |]
     _ ->
-      viewAddWidget formWidget Nothing "Tags"
+      lookupGetParam "inline" >>= \case
+        Just _ -> fail "invalid form"
+        Nothing -> viewAddWidget formWidget Nothing "Tags"
 
   where
     toBookmark :: UserId -> UTCTime -> AddForm -> Bookmark
@@ -65,16 +69,27 @@ postAddR = do
         (maybe True not private)
         (fromMaybe False toread)
         False
-    upsertDB :: Bookmark -> [Text] -> DB ()
-    upsertDB bookmark tags = do
+    upsertDB :: Maybe (Key Bookmark) -> Bookmark -> [Text] -> DB (Key Bookmark)
+    upsertDB mbid bookmark tags = do
       let userId = bookmarkUserId bookmark
           url = bookmarkHref bookmark
-      getBy (UniqueUserHref userId url) >>= \case
-        Just (Entity eid _) -> deleteCascade eid
-        _ -> pure ()
-      bid <- insert bookmark
+      bid' <- case mbid of
+          Just bid -> do
+            get bid >>= \case 
+              Just bmark -> do
+                replace bid bookmark
+                update bid [BookmarkSelected =. bookmarkSelected bmark, BookmarkTime =. bookmarkTime bmark]
+                deleteWhere [BookmarkTagBookmarkId ==. bid]
+                pure bid
+              Nothing -> fail "not found"
+          Nothing -> do
+            getBy (UniqueUserHref userId url) >>= \case
+              Just (Entity bid _) -> deleteCascade bid
+              _ -> pure ()
+            insert bookmark
       forM_ (zip [1 ..] tags) $
-        \(i, tag) -> void $ insert $ BookmarkTag userId tag bid i
+        \(i, tag) -> void $ insert $ BookmarkTag userId tag bid' i
+      pure bid'
 
 -- add widget
 
@@ -94,6 +109,7 @@ data AddForm = AddForm
   , tags :: Maybe Text
   , private :: Maybe Bool
   , toread :: Maybe Bool
+  , bid :: Maybe Int64
   } deriving (Show, Eq, Read, Generic)
 
 mkAddAForm :: MonadHandlerForm m => Maybe AddForm -> AForm m AddForm
@@ -105,6 +121,7 @@ mkAddAForm defs = do
       <*> aopt textField (textAttrs $ named "tags" "tags") (tags <$> defs)
       <*> aopt checkBoxField (named "private" "private") (private <$> defs)
       <*> aopt checkBoxField (named "toread" "read later") (toread <$> defs)
+      <*> aopt hiddenField (named "bid" "") (bid <$> defs)
   where
     textAttrs = attr ("size", "70")
     textAreaAttrs = attrs [("cols", "70"), ("rows", "4")]

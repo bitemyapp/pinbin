@@ -4,7 +4,7 @@
       <img .pin_logo src="@{StaticR images_bluepin_gif}">
         <a #pinboard_name>Pinboard-Server
         $maybe userName <- musername
-          <span>(<a class="banner_username" href="@{UserR (UserNameP userName)}">#{userName}<a>)</span>
+          <span>(<a class="banner_username" data-username="#{userName}" href="@{UserR (UserNameP userName)}">#{userName}<a>)</span>
         <!-- <div #timer>#{pageLoadTime} s -->
     <div #top_menu>
 
