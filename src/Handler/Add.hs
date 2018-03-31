@@ -3,6 +3,7 @@
 module Handler.Add where
 
 import Import
+import Database.Persist.Sql
 import Data.List (nub)
 
 getAddR :: Handler Html
@@ -80,7 +81,9 @@ postAddR = do
 viewAddWidget :: Widget -> Maybe Widget -> Text -> Handler Html
 viewAddWidget formWidget mexists focusEl = do
   let submitText = (maybe "add bookmark" (const "update bookmark") mexists) :: Text
-  popupLayout mexists $(widgetFile "add")
+  popupLayout mexists $ do
+    $(widgetFile "bm")
+    $(widgetFile "add")
 
 -- AddForm
 

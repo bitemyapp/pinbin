@@ -68,7 +68,7 @@
                     <a .delete onclick="app.bm.delete_ask(event);" href="#" style="display: inline;"> delete
                     <span .confirm style="display: none;">
                       <a href="#" onclick="app.bm.delete_cancel(event)"> cancel /
-                      <a .destroy href="#" onclick="app.bm.destroy(event, #{bk});"> destroy
+                      <a .destroy href="#" onclick="app.bm.destroy(event, #{bk}, () => {$(event.target).closest('.bookmark').remove();});"> destroy
 
               $if bookmarkToRead
                 <div .read style="display:inline">

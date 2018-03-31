@@ -9,11 +9,9 @@ app.bm = {
         var $el = $(e.target)
         this._toggle_delete($el, false);
     },
-    destroy: function (e, id) {
+    destroy: function (e, id, success) {
         app.pd(e);
-        this._destroy(id, () =>
-            $(e.target).closest('.bookmark').remove(),
-            console.log);
+        this._destroy(id, () => {if(success) {success();}}, console.log);
     },
     _toggle_delete($el, active) {
         $el.closest('.delete_link')
