@@ -20,6 +20,9 @@ data MigrationOpts
                , userName :: Text
                , userPassword :: Text
                , userApiToken :: Maybe Text}
+  | DeleteUser { conn :: Text
+               , userName :: Text
+               }
   | ImportBookmarks { conn :: Text
                     , userName :: Text
                     , bookmarkFile :: FilePath}
@@ -42,6 +45,14 @@ main =
              [UserPasswordHash P.=. hash', UserApiToken P.=. utoken]
          liftIO $ cpprint user
          pure () :: DB ()
+    DeleteUser conn uname ->
+      P.runSqlite conn $
+      do P.getBy (UniqueUserName uname) >>=
+           \case
+             Just (P.Entity uid _) -> do
+               P.deleteCascade uid
+               pure () :: DB ()
+             Nothing -> liftIO $ print $ uname ++ "not found"
     ImportBookmarks conn uname file ->
       P.runSqlite conn $
       do P.getBy (UniqueUserName uname) >>=
