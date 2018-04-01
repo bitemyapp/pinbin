@@ -56,14 +56,12 @@
                     $with private <- isPrefixOf "." bookmarkTagTag
                       $if (private && isowner) || (not private)
                         <a .tag :private:.private href="@{UserTagsR unamep (TagsP [bookmarkTagTag])}">#{bookmarkTagTag}</a>
-              <br>
   
-              <a .when href="@{UserFilterR unamep (FilterSingle bk)}" title="">
-                #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
+              <a .when.js-moment title="#{TI.formatISO8601Millis bookmarkTime}" data-iso8601="#{TI.formatISO8601Millis bookmarkTime}" href="@{UserFilterR unamep (FilterSingle bk)}" title="">
+                &nbsp;
                 
               $if isowner
                 <div .edit_links style="display:inline">
-                  &nbsp;&nbsp;
                   <a .edit onclick="app.bm.edit(event, #{bk});" href="#"> edit&nbsp;&nbsp;
                   <div .delete_link>
                     <a .delete onclick="app.bm.delete_ask(event);" href="#" style="display: inline;"> delete
@@ -78,7 +76,9 @@
   
             <div style="clear:both">
   
-           <div style="clear:both">
+          <div style="clear:both">
+
+  <div style="clear:both">
 
   ^{pager}
 

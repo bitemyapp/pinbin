@@ -104,7 +104,15 @@ a.fetch_err
     display:none; 
 }
 .delete_link { display:inline; }
-.when {  font-size:90%;color:#777 }
+.when {
+    font-size:90%;
+    width: 90px;
+    color:#777 !important;
+    display: inline-block;
+}
+.js-moment {
+    width: 105px;
+}
 a.url_display:hover { color:#44d; }
 
 a.source { color:#77c;}
@@ -112,7 +120,7 @@ a.tag {color:#a51;line-height:190%;}
 a.bundle { color:#b40;font-weight:bold }
 a.bundle { color:#a21;font-weight:bold }
 
-.tags { display: inline; }
+.tags { display: block; }
 .tags a.tag {
     margin-right: 5px;
 }
@@ -417,7 +425,6 @@ a.next_prev { color:#777 }
 .edit_bookmark_form .edit-button
 {
     background-color: #eee;
-    cursor: pointer;
 }
 
 #tag_cloud

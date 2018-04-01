@@ -1,7 +1,9 @@
 $maybe (Entity bk' Bookmark{..}, tags) <- mexisting
   $with bk <- fromSqlKey bk'
    <div .alert>
-     previously saved #{formatTime defaultTimeLocale "%Y-%m-%d %H:%M" bookmarkTime}
+     previously saved
+     <span class="js-moment" title="#{TI.formatISO8601Millis bookmarkTime}" data-iso8601="#{TI.formatISO8601Millis bookmarkTime}">
+       &nbsp;
      <div .edit_links style="display:inline">
        &nbsp;&nbsp;
        <div .delete_link style="display:inline">

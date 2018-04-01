@@ -12,9 +12,8 @@ import Import
 import Text.Read
 import Database.Persist.Sql
 import qualified Database.Esqueleto as E
+import qualified Data.Time.ISO8601 as TI
 
--- import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
--- import Text.Julius (RawJS (..))
 
 getUserR :: UserNameP -> Handler Html
 getUserR uname@(UserNameP name) = do

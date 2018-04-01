@@ -1,4 +1,13 @@
 app.bm = {
+    replace_iso_timestamps: function() {
+        $('.js-moment').each(function(i,e) {
+           let $e = $(e);
+           var m = moment($e.data('iso8601'), moment.ISO_8601);
+           $e.text(m.fromNow());
+           $e.attr('title', m.format('MMMM D YYYY, h:mm a') + " (" + m.format() + ") ");
+           $e.css('visibility','visible');
+        });
+    },
     delete_ask: function(e, id) {
         app.pd(e);
         var $el = $(e.target)
@@ -109,8 +118,8 @@ app.bm = {
             $bm.toggleClass('private', private);
 
             $bm.find('.tags').empty().append(
-                $f.find('.tags').val().split(' ').map(v =>
-                    $(`<a class="tag ${v.indexOf(".") === 0 ? "private" : ""}" href="u:${username}/t:${v}">${v}</a>`)
+                $f.find('.tags').val().split(' ').filter(_ => _.length > 0).map(v =>
+                    $(`<a class="tag ${v.indexOf(".") === 0 ? "private" : ""}" href="/u:${username}/t:${v}">${v}</a>`)
                 )
             );
 
@@ -126,5 +135,5 @@ app.bm = {
     }
 
 };
-
+app.bm.replace_iso_timestamps();
 
